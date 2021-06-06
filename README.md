@@ -26,5 +26,7 @@ cargo run --release
 - [Google Fonts](https://fonts.google.com/)
   - [Reggae One](https://fonts.google.com/specimen/Reggae+One?subset=japanese)
 ## 問題・宿題
-- 何かリークしてるようで動かし続けるとFPSがどんどん下がり動きがガクガクになる。そして最後はpanic。治したい。
-- WASMに対応したい。
+- 何かリークしてるようで動かし続けるとFPSがどんどん下がりガクガクになる。  
+そして最後はPanicする。治したい
+- WASMに対応したい
+- 背景の星が落下物の手前に描画されることがある。それなりの頻度で。治したい
