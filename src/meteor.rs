@@ -19,13 +19,13 @@ impl Plugin for PluginFalls
 			(	SystemSet::on_update( GameState::Play )				// on_update()
 				.with_system( falling_meteors_onscreen.system() )	// 落下物を投入
 				.with_system( standby_meteors_offscreen.system() )	// 落下物を待機
-	)
+			)
 		//--------------------------------------------------------------------------------
 			.add_system_set											// GameState::Over
 			(	SystemSet::on_update( GameState::Over )				// on_update()
 				.with_system( falling_meteors_onscreen.system() )	// 落下物を投入
 				.with_system( standby_meteors_offscreen.system() )	// 落下物を待機
-	)
+			)
 		//--------------------------------------------------------------------------------
 		;
 	}
@@ -39,8 +39,8 @@ impl Plugin for PluginFalls
 struct Meteor;
 
 //Resource
-struct FallingRhythm { timer: Timer }					//落下物の発生タイマー
-pub struct InfoNumOfFalls { pub count: usize }			//落下中の数
+struct FallingRhythm { timer: Timer }					 //落下物の発生タイマー
+pub struct InfoNumOfFalls { pub count: usize }			 //落下中の数
 
 //落下物
 const SPRITE_PNG_FILE: &str = "sprites/meteor.png";		 //画像ファイル
