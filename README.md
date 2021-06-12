@@ -21,12 +21,10 @@ cargo run --release
 - [bevy 0.5](https://bevyengine.org/)と[その仲間たち](https://crates.io/search?q=bevy)
   - [bevy_prototype_lyon 0.3.1](https://github.com/Nilirad/bevy_prototype_lyon/)
   - [bevy_canvas 0.1.0](https://github.com/Nilirad/bevy_canvas)
-  - [heron 0.7.0](https://github.com/jcornaz/heron/)
+  - [heron 0.8.0](https://github.com/jcornaz/heron/)
   - [Unofficial Bevy Cheat Book](https://github.com/bevy-cheatbook/bevy-cheatbook)
 - [Google Fonts](https://fonts.google.com/)
   - [Reggae One](https://fonts.google.com/specimen/Reggae+One?subset=japanese)
 ## 問題・宿題
-- 何かリークしてるようで動かし続けるとFPSがどんどん下がりガクガクになる。  
-そして最後はPanicする。治したい
 - WASMに対応したい
 - 背景の星が落下物の手前に描画されることがある。それなりの頻度で。治したい
