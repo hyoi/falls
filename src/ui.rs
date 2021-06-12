@@ -238,15 +238,15 @@ fn update_footer_ui_left
 //下端の情報表示を更新する(中)
 fn update_footer_ui_center
 (	mut q_ui: Query<&mut Text, With<FooterUiCenter>>,
-	o_meteor: Option<Res<BitNums>>,
+	o_info: Option<Res<InfoNumOfFalls>>,
 )
 {	if let Ok( mut ui ) = q_ui.single_mut()
-	{	let meteor = match o_meteor
-		{	Some( x ) => format!( "{:03}", x.0.count_ones() ),
+ 	{	let count = match o_info
+		{	Some( x ) => format!( "{:03}", x.count ),
 			None      => NA_STR3.to_string()
 		};
-		ui.sections[ 1 ].value = meteor;
-	}
+		ui.sections[ 1 ].value = count;
+ 	}
 }
 
 //下端の情報表示を更新する(右)
