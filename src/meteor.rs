@@ -44,6 +44,7 @@ pub struct InfoNumOfFalls { pub count: usize }			 //落下中の数
 
 //落下物
 const SPRITE_PNG_FILE: &str = "sprites/meteor.png";		 //画像ファイル
+const METEOR_DEPTH: f32 = 10.0;							 //スプライトのZ座標 
 const METEOR_SPAWN_WAIT: f32 = 0.0166;					 //発生タイマーのウエイト
 const MAX_NUM_OF_FALLS: usize = 130;					 //最大数
 const SPACE_GRAVITY: [ f32; 2 ] = [ 0.0, -9.81 * 10.0 ]; //宇宙重力
@@ -59,7 +60,7 @@ const BOTTOM: f32 = SCREEN_HEIGHT / -2.0 - PIXEL_PER_GRID;
 //落下物の位置と速度を乱数で決める
 fn generate_position_and_velocity() -> ( Vec3, Vec2 )
 {	let mut rng = rand::thread_rng();
-	let p = Vec3::new( rng.gen_range( LEFT..=RIGHT ), TOP, 0.0 );
+	let p = Vec3::new( rng.gen_range( LEFT..=RIGHT ), TOP, METEOR_DEPTH );
 	let v = Vec2::new( rng.gen_range( -0.5..= 0.5 ), rng.gen_range( -20.0..=-5.0 ) ) * PIXEL_PER_GRID;
 	( p, v )
 }
@@ -128,7 +129,7 @@ fn standby_meteors_offscreen( q: Query<( &mut RigidBody, &Transform ), With<Mete
 		{	if ! ( LEFT..=RIGHT ).contains( &transform.translation.x )
 			|| ! ( BOTTOM..=TOP ).contains( &transform.translation.y )
 			{	*rigid_body = RigidBody::Sensor
-			}	
+			}
 		}
 	} );
 }

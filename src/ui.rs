@@ -208,14 +208,14 @@ fn hidden_footer_frame() -> NodeBundle
 //上端の情報表示を更新する(右)
 fn update_header_ui_right
 (	mut q_ui: Query<&mut Text, With<HeaderUiRight>>,
-	o_timer: Option<ResMut<PlayTimer>>,
+	o_life: Option<ResMut<LifeTime>>,
 )
 {	if let Ok( mut ui ) = q_ui.single_mut()
-	{	let time = match o_timer
-		{	Some( x ) => format!( "{:2.2}", x.0 ),
-			None      => NA_TIME.to_string()
+	{	let life_time = match o_life
+		{	Some( life ) => format!( "{:2.2}", life.time ),
+			None         => NA_TIME.to_string()
 		};
-		ui.sections[ 1 ].value = time;
+		ui.sections[ 1 ].value = life_time;
 	}
 }
 
@@ -225,41 +225,41 @@ fn update_footer_ui_left
 	diag: Res<Diagnostics>,
 )
 {	if let Ok( mut ui ) = q_ui.single_mut()
-	{	let fps = if let Some( x ) = diag.get( FrameTimeDiagnosticsPlugin::FPS )
-		{	match x.average()
+	{	let fps_avr = if let Some( fps ) = diag.get( FrameTimeDiagnosticsPlugin::FPS )
+		{	match fps.average()
 			{	Some( avg ) => format!( "{:.2}", avg ),
 				None        => NA_STR3.to_string()
 			}
 		} else { NA_STR3.to_string() };
-		ui.sections[ 1 ].value = fps;
+		ui.sections[ 1 ].value = fps_avr;
 	}
 }
 
 //下端の情報表示を更新する(中)
 fn update_footer_ui_center
 (	mut q_ui: Query<&mut Text, With<FooterUiCenter>>,
-	o_info: Option<Res<InfoNumOfFalls>>,
+	o_falls: Option<Res<InfoNumOfFalls>>,
 )
 {	if let Ok( mut ui ) = q_ui.single_mut()
- 	{	let count = match o_info
-		{	Some( x ) => format!( "{:03}", x.count ),
-			None      => NA_STR3.to_string()
+ 	{	let falls_count = match o_falls
+		{	Some( falls ) => format!( "{:03}", falls.count ),
+			None          => NA_STR3.to_string()
 		};
-		ui.sections[ 1 ].value = count;
+		ui.sections[ 1 ].value = falls_count;
  	}
 }
 
 //下端の情報表示を更新する(右)
 fn update_footer_ui_right
 (	mut q_ui: Query<&mut Text, With<FooterUiRight>>,
-	o_stars: Option<Res<BgStars>>,
+	o_bg: Option<Res<BgStars>>,
 )
 {	if let Ok( mut ui ) = q_ui.single_mut()
-	{	let stars = match o_stars
-		{	Some( x ) => format!( "{:03}", x.0.len() ),
-			None      => NA_STR3.to_string()
+	{	let stars_count = match o_bg
+		{	Some( bg ) => format!( "{:03}", bg.stars.len() ),
+			None       => NA_STR3.to_string()
 		};
-		ui.sections[ 1 ].value = stars;
+		ui.sections[ 1 ].value = stars_count;
 	}
 }
 

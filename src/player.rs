@@ -10,7 +10,8 @@ impl Plugin for PluginPlayer
 		//--------------------------------------------------------------------------------
 			.add_system_set												// GameState::Play
 			(	SystemSet::on_enter( GameState::Play )					// on_enter()
-				.with_system( set_player_start_position.system() )		// 自機を初期値へ配置
+				.with_system( set_player_to_start_position.system() )	// 自機を開始位置へ配置
+				.with_system( set_life_gauge_to_starting.system() )		// LIFE GAUGEを初期化
 			)
 			.add_system_set												// GameState::Play
 			(	SystemSet::on_update( GameState::Play )					// on_update()
@@ -25,8 +26,8 @@ impl Plugin for PluginPlayer
 		//--------------------------------------------------------------------------------
 			.add_system_set												// GameState::Over
 			(	SystemSet::on_update( GameState::Over )					// on_update()
-				.with_system( standby_plyer_offscreen.system() )		// 画面がに出た自機を待機
-				.with_system( handle_input_space_key.system() )			//
+				.with_system( standby_plyer_offscreen.system() )		// 画面外に出た自機を待機させる
+				.with_system( handle_input_space_key.system() )			// リプレイのキー入力待ち
 			)
 		//--------------------------------------------------------------------------------
 		;
@@ -42,21 +43,21 @@ struct Player;
 struct LifeGauge;
 
 //Resource
-struct DamageCounter ( pub usize );
-pub struct PlayTimer ( pub f64 );
+pub struct LifeTime { pub time: f64 }
+struct CollisionDamage { damage: usize }
 
 //LIFE GAUGE
-const GAUGE: f32 = 100.0;
-const GAUGE_RATE: f32 = 18.0;
+const GAUGE_LENGTH: f32 = 100.0;	//LIFE GAUGEの長さ(LIFEポイント)
+const GAUGE_RATE: f32 = 18.0;		//スプライトの横方向の拡大率
 const GAUGE_PIXEL: f32 = PIXEL_PER_GRID * 0.6;
 const GAUGE_POSITION: ( f32, f32 ) = ( 0.0, SCREEN_HEIGHT / 2.0 - PIXEL_PER_GRID * 0.9 );
-const GAUGE_DEPTH: f32 = 20.0;
+const GAUGE_DEPTH: f32 = 30.0;
 
 //自機のスプライト
 const PLAYER_PIXEL: f32 = PIXEL_PER_GRID;
 const PLAYER_COLOR: Color = Color::YELLOW;
-const PLAYER_START: ( f32, f32 ) = ( 0.0, - SCREEN_HEIGHT / 4.0 );
-const PLAYER_DEPTH: f32 = 10.0;
+const PLAYER_START: ( f32, f32 ) = ( 0.0, SCREEN_HEIGHT / -4.0 );
+const PLAYER_DEPTH: f32 = 20.0;
 
 //移動可能範囲
 const LEFT  : f32 = SCREEN_WIDTH  / -2.0 + PIXEL_PER_GRID;
@@ -64,7 +65,7 @@ const RIGHT : f32 = SCREEN_WIDTH  /  2.0 - PIXEL_PER_GRID;
 const TOP   : f32 = SCREEN_HEIGHT /  2.0 - PIXEL_PER_GRID;
 const BOTTOM: f32 = SCREEN_HEIGHT / -2.0 + PIXEL_PER_GRID;
 
-//待機領域
+//自機の待機スペース分を追加した移動可能範囲
 const WAITING_LEFT  : f32 = LEFT   - PLAYER_PIXEL * 2.0;
 const WAITING_RIGHT : f32 = RIGHT  + PLAYER_PIXEL * 2.0;
 const WAITING_TOP   : f32 = TOP    + PLAYER_PIXEL * 2.0;
@@ -113,41 +114,53 @@ fn initialize_player
 		.insert( LifeGauge );
 
 	//Resourceを登録する
-	cmds.insert_resource( DamageCounter ( 0 ) );
-	cmds.insert_resource( PlayTimer ( 0.0 ) );
+	cmds.insert_resource( LifeTime { time: 0.0 } );
+	cmds.insert_resource( CollisionDamage { damage: 0 } );
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-//自機を開始位置に配置する。プレイタイマー初期化。
-fn set_player_start_position
+//自機をスタート位置へ配置する
+fn set_player_to_start_position
 (	mut q: Query<( &mut RigidBody, &mut PhysicMaterial, &mut Transform ), With<Player>>,
-	mut timer: ResMut<PlayTimer>,
-	mut damage: ResMut<DamageCounter>,
 )
-{	//自機を画面内に移動する
+{	//自機を画面内の開始位置へ
 	let ( mut rigid_body, mut phy_matl, mut transform ) = q.single_mut().unwrap();
 	*rigid_body = RigidBody::Dynamic;
 	phy_matl.density = 0.0;
 	let ( x, y ) = PLAYER_START;
 	transform.translation = Vec3::new( x, y, PLAYER_DEPTH );
-	let angle = Quat::IDENTITY;
-	transform.rotation = angle;
+	transform.rotation = Quat::IDENTITY;
+}
 
-	//初期化
-	timer.0 = 0.0;
-	damage.0 = 0;
+//LIFE GAUGEをスタート状態に初期化する
+fn set_life_gauge_to_starting
+(	mut q_gauge: Query<( &mut Transform, &Handle<ColorMaterial> ), With<LifeGauge>>,
+	mut life: ResMut<LifeTime>,
+	mut collision: ResMut<CollisionDamage>,
+	mut assets_color_matl: ResMut<Assets<ColorMaterial>>,
+)
+{	//LIFE GAUGEを初期化する
+	let ( mut transform, handle ) = q_gauge.single_mut().unwrap();
+	let scale = &mut transform.scale;
+	scale[ 0 ] = GAUGE_RATE;
+	let color_matl = assets_color_matl.get_mut( handle ).unwrap();
+	color_matl.color = Color::YELLOW;
+
+	//変数の初期化
+	life.time = 0.0;
+	collision.damage = 0;
 }
 
 //キー入力に従って自機を移動する
 fn move_sprite_player
-(	mut q_player: Query< &mut Transform, With<Player> >,
-	mut timer: ResMut<PlayTimer>,
+(	mut q: Query< &mut Transform, With<Player> >,
+	mut life: ResMut<LifeTime>,
 	( time, inkey ): ( Res<Time>, Res<Input<KeyCode>> ),
 )
 {	//前回からの経過時間
 	let time_delta = time.delta().as_secs_f32();
-	timer.0 += time_delta as f64; //プレイタイマーの累積
+	life.time += time_delta as f64; //LIFE TIMEの累積
 
 	//キー入力を取得する
 	let ( mut dx, mut dy ) = ( 0.0, 0.0 );
@@ -157,7 +170,7 @@ fn move_sprite_player
 	if inkey.pressed( KeyCode::Down  ) { dy += -PLAYER_PIXEL }
 
 	//スプライトの表示位置を更新する
-	let mut transform = q_player.single_mut().unwrap();
+	let mut transform = q.single_mut().unwrap();
 	let position = &mut transform.translation;
 	let mut new_x = position.x + dx * time_delta * 10.0;
 	let mut new_y = position.y + dy * time_delta * 10.0;
@@ -171,52 +184,51 @@ fn move_sprite_player
 
 //衝突検知
 fn handle_collision_event
-(	q_player: Query< Entity, With<Player> >,
+(	q: Query< Entity, With<Player> >,
 	mut events: EventReader<CollisionEvent>,
-	mut damage: ResMut<DamageCounter>,
+	mut collision: ResMut<CollisionDamage>,
 )
-{	let player = q_player.single().unwrap();
+{	let player_id = q.single().unwrap();
 
 	events.iter().for_each( | event |
 	{	if let CollisionEvent::Started( id1, id2 ) = event
-		{	if id1.rigid_body_entity() == player
-			|| id2.rigid_body_entity() == player { damage.0 += 1 }
+		{	if id1.rigid_body_entity() == player_id
+			|| id2.rigid_body_entity() == player_id { collision.damage += 1 }
 		}
 	} );
 }
 
 //ライフゲージを更新する。ライフがゼロならGameOverイベントを送信する
 fn update_life_gauge
-(	mut q_gauge: Query<( &mut Transform, &Handle<ColorMaterial> ), With<LifeGauge>>,
-	mut assets_color_matl: ResMut<Assets<ColorMaterial>>,
-	damage: Res<DamageCounter>,
+(	mut q: Query<( &mut Transform, &Handle<ColorMaterial> ), With<LifeGauge>>,
+	collision: Res<CollisionDamage>,
 	mut event: EventWriter<GameState>,
+	mut assets_color_matl: ResMut<Assets<ColorMaterial>>,
 )
-{	let ( mut transform, handle ) = q_gauge.single_mut().unwrap();
-	let life = GAUGE - damage.0 as f32; //残りHP
+{	let ( mut transform, handle ) = q.single_mut().unwrap();
+	let life_point = GAUGE_LENGTH - collision.damage as f32; //残りHP
 
 	//LIFE GAUGEの横方向の拡大率を変える(長方形の長さが変わる)
 	let scale = &mut transform.scale;
 	if 	scale[ 0 ] > 0.0
-	{	scale[ 0 ] = ( GAUGE_RATE / GAUGE ) * life;
+	{	scale[ 0 ] = ( GAUGE_RATE / GAUGE_LENGTH ) * life_point;
 		if scale[ 0 ] < 0.0 { scale[ 0 ] = 0.0 }
 	}
 
 	//色を変える(黄色⇒赤色)
 	let color_matl = assets_color_matl.get_mut( handle ).unwrap();
-	let ( r, g, b ) = ( 1.0, life / 100.0, 0.0 );
-	color_matl.color = Color::rgb( r, g, b );
+	color_matl.color = Color::rgb( 1.0, life_point / GAUGE_LENGTH, 0.0 );
 
 	//LIFEが0ならゲームオーバー
-	if life <= 0.0 { event.send( GameState::Over ); }
+	if life_point <= 0.0 { event.send( GameState::Over ); }
 }
 
 //ライフがゼロになった自機はコントロール不能
 fn change_player_out_of_control
 (	mut q_player: Query< &mut PhysicMaterial, With<Player> >,
-	mut q_ui : Query<&mut Visible, With<MessageOver>>,
+	mut q_ui    : Query< &mut Visible, With<MessageOver> >,
 )
-{	//自機に密度を与えて、以降の運動をheronに任せる
+{	//自機に密度を与えて、heronの物理運動に任せる
 	let mut phy_matl = q_player.single_mut().unwrap();
 	phy_matl.density = 1.0;
 
@@ -240,27 +252,18 @@ fn standby_plyer_offscreen( mut q: Query<( &mut RigidBody, &Transform ), With<Pl
 
 //SPACEキーが入力され次第ステートを変更する
 fn handle_input_space_key
-(	mut q_ui : Query<&mut Visible, With<MessageOver>>,
-	mut q_gauge: Query<( &mut Transform, &Handle<ColorMaterial> ), With<LifeGauge>>,
-	mut assets_color_matl: ResMut<Assets<ColorMaterial>>,
-	mut inkey: ResMut<Input<KeyCode>>,
+(	mut q_ui   : Query< &mut Visible, With<MessageOver> >,
 	mut event: EventWriter<GameState>,
+	mut inkey: ResMut<Input<KeyCode>>,
 )
-{	if inkey.just_pressed( KeyCode::Space ) 
-	{	//GAME OVERメッセージ非表示
-		if let Ok( mut ui ) = q_ui.single_mut() { ui.is_visible = false }
+{	if ! inkey.just_pressed( KeyCode::Space ) { return } 
 
-		//LIFE GAUGEを初期化する
-		let ( mut transform, handle ) = q_gauge.single_mut().unwrap();
-		let scale = &mut transform.scale;
-		scale[ 0 ] = GAUGE_RATE;
-		let color_matl = assets_color_matl.get_mut( handle ).unwrap();
-		color_matl.color = Color::YELLOW;
+	//GAME OVERメッセージ非表示
+	if let Ok( mut ui ) = q_ui.single_mut() { ui.is_visible = false }
 
-		//replay
-		event.send( GameState::Play );
-		inkey.reset( KeyCode::Space ); //https://bevy-cheatbook.github.io/programming/states.html#with-input
-	}
+	//リプレイのイベント送信
+	event.send( GameState::Play );
+	inkey.reset( KeyCode::Space ); //https://bevy-cheatbook.github.io/programming/states.html#with-input
 }
 
 //End of code

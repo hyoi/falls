@@ -75,7 +75,7 @@ fn main()
 	//--------------------------------------------------------------------------------
 		.add_plugin( PluginPlayer )								// 自機
 		.add_plugin( PluginFalls )								// 落下物
-		.add_plugin( PluginBGStars )							// 背景の星空
+		.add_plugin( PluginBgStars )							// 背景の星空
 		.add_plugin( PluginUi )									// UI
 	//--------------------------------------------------------------------------------
 		.add_system( toggle_window_mode.system() )				// [Alt]+[Enter]でフルスクリーン
