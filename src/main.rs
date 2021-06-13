@@ -55,7 +55,8 @@ fn main()
 		..Default::default()
 	};
 	
-	App::build()
+	let mut app = App::build();
+	app
 	//--------------------------------------------------------------------------------
 		.insert_resource( main_window )							// メインウィンドウ
 		.insert_resource( ClearColor( SCREEN_BGCOLOR ) )		// 背景色
@@ -63,7 +64,7 @@ fn main()
 	//--------------------------------------------------------------------------------
 		.add_plugins( DefaultPlugins )							// デフォルトプラグイン
 		.add_plugin( FrameTimeDiagnosticsPlugin::default() )	// fps計測のプラグイン
-		.add_plugin( CanvasPlugin )								// bevy_canvasを使う
+	//	.add_plugin( CanvasPlugin )								// bevy_canvasを使う
 		.add_plugin( ShapePlugin )								// bevy_prototype_lyonを使う
 		.add_plugin( PhysicsPlugin::default() )					// heronを使う
 	//--------------------------------------------------------------------------------
@@ -75,13 +76,24 @@ fn main()
 	//--------------------------------------------------------------------------------
 		.add_plugin( PluginPlayer )								// 自機
 		.add_plugin( PluginFalls )								// 落下物
-		.add_plugin( PluginBgStars )							// 背景の星空
+//		.add_plugin( PluginBgStars )							// 背景の星空
 		.add_plugin( PluginUi )									// UI
 	//--------------------------------------------------------------------------------
-		.add_system( toggle_window_mode.system() )				// [Alt]+[Enter]でフルスクリーン
+	//	.add_system( toggle_window_mode.system() )				// [Alt]+[Enter]でフルスクリーン
 		.add_system( handle_esc_key_for_pause.system() )		// [Esc]でpause処理
 	//--------------------------------------------------------------------------------
-	.run();														// アプリの実行
+	;
+
+	#[cfg(not(target_arch = "wasm32"))]
+	app.add_plugin( CanvasPlugin )								// bevy_canvasを使う
+	   .add_plugin( PluginBgStars )								// 背景の星空
+	   .add_system( toggle_window_mode.system() )				// [Alt]+[Enter]でフルスクリーン
+	;
+
+	#[cfg(target_arch = "wasm32")]
+	app.add_plugin( bevy_webgl2::WebGL2Plugin );				// WASM用のプラグイン
+
+	app.run();													// アプリの実行
 }
 
 ////////////////////////////////////////////////////////////////////////////////
