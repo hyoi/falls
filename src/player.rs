@@ -240,10 +240,9 @@ fn change_player_out_of_control
 fn standby_plyer_offscreen( mut q: Query<( &mut RigidBody, &Transform ), With<Player> > )
 {	if let Ok ( ( mut rigid_body, transform ) ) = q.single_mut()
 	{	if *rigid_body == RigidBody::Dynamic
-		{	if ! ( WAITING_LEFT..=WAITING_RIGHT ).contains( &transform.translation.x )
-			|| ! ( WAITING_BOTTOM..=WAITING_TOP ).contains( &transform.translation.y )
-			{	*rigid_body = RigidBody::Sensor
-			}
+			&& ! ( ( WAITING_LEFT..=WAITING_RIGHT ).contains( &transform.translation.x )
+				&& ( WAITING_BOTTOM..=WAITING_TOP ).contains( &transform.translation.y ) )
+		{	*rigid_body = RigidBody::Sensor
 		}
 	}
 }

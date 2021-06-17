@@ -76,7 +76,7 @@ fn main()
 	//--------------------------------------------------------------------------------
 		.add_plugin( PluginPlayer )								// 自機
 		.add_plugin( PluginFalls )								// 落下物
-//		.add_plugin( PluginBgStars )							// 背景の星空
+	//	.add_plugin( PluginBgStars )							// 背景の星空
 		.add_plugin( PluginUi )									// UI
 	//--------------------------------------------------------------------------------
 	//	.add_system( toggle_window_mode.system() )				// [Alt]+[Enter]でフルスクリーン
@@ -129,24 +129,25 @@ fn handle_esc_key_for_pause
 	mut state: ResMut<State<GameState>>,
 	mut inkey: ResMut<Input<KeyCode>>,
 )
-{	let now = *state.current();
-	if now != GameState::Pause && now != GameState::Play { return }
+{	if ! inkey.just_pressed( KeyCode::Escape ) { return }
 
-	let pause_key = KeyCode::Escape;
+	let now = *state.current();
+	if ! ( now == GameState::Pause || now == GameState::Play ) { return }
+
 	if let Ok( mut ui ) = q_ui.single_mut()
-	{	if inkey.just_pressed( pause_key ) 
-		{	if now == GameState::Pause
+	{	match now
+		{	GameState::Pause =>
 			{	ui.is_visible = false;
 				state.pop().unwrap();
 				phy_timer.resume();
 			}
-			else
+			_ => 
 			{	ui.is_visible = true;
 				state.push( GameState::Pause ).unwrap();
 				phy_timer.pause();
 			}
-			inkey.reset( pause_key ); // https://bevy-cheatbook.github.io/programming/states.html#with-input
 		}
+		inkey.reset( KeyCode::Escape ); // https://bevy-cheatbook.github.io/programming/states.html#with-input
 	}
 }
 

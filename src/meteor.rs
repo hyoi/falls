@@ -126,10 +126,9 @@ fn falling_meteors_onscreen
 fn standby_meteors_offscreen( q: Query<( &mut RigidBody, &Transform ), With<Meteor>> )
 {	q.for_each_mut( | ( mut rigid_body, transform ) |
 	{	if *rigid_body == RigidBody::Dynamic
-		{	if ! ( LEFT..=RIGHT ).contains( &transform.translation.x )
-			|| ! ( BOTTOM..=TOP ).contains( &transform.translation.y )
-			{	*rigid_body = RigidBody::Sensor
-			}
+			&& ! ( ( LEFT..=RIGHT ).contains( &transform.translation.x )
+				&& ( BOTTOM..=TOP ).contains( &transform.translation.y ) )
+		{	*rigid_body = RigidBody::Sensor
 		}
 	} );
 }
