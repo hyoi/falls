@@ -172,14 +172,10 @@ fn move_sprite_player
 	//スプライトの表示位置を更新する
 	let mut transform = q.single_mut().unwrap();
 	let position = &mut transform.translation;
-	let mut new_x = position.x + dx * time_delta * 10.0;
-	let mut new_y = position.y + dy * time_delta * 10.0;
-	new_x = if new_x < LEFT   { LEFT   } else { new_x };
-	new_x = if new_x > RIGHT  { RIGHT  } else { new_x };
-	new_y = if new_y > TOP    { TOP    } else { new_y };
-	new_y = if new_y < BOTTOM { BOTTOM } else { new_y };
-	position.x = new_x;
-	position.y = new_y;
+	let new_x = position.x + dx * time_delta * 10.0;
+	let new_y = position.y + dy * time_delta * 10.0;
+	position.x = new_x.clamp( LEFT, RIGHT );
+	position.y = new_y.clamp( BOTTOM, TOP );
 }
 
 //衝突検知
