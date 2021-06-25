@@ -85,7 +85,7 @@ fn initialize_falls
 			.insert( RigidBody::Sensor )
 			.insert( CollisionShape::Sphere { radius: PIXEL_PER_GRID / 2.0 } )
 			.insert( Velocity::from( v ) )
-			.insert( PhysicMaterial { restitution: 0.2, ..Default::default() } )
+			.insert( PhysicMaterial { restitution: 0.0, ..Default::default() } )
 			.insert( RotationConstraints::lock() )
 		;
 	} );
