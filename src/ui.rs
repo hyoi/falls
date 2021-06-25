@@ -8,6 +8,7 @@ impl Plugin for PluginUi
 		//--------------------------------------------------------------------------------
 			.add_startup_system( spawn_text_ui_message.system() )	// Text UIを生成
 		//--------------------------------------------------------------------------------
+			.add_system( update_header_ui_left.system() )			// 情報を更新
 			.add_system( update_header_ui_right.system() )			// 情報を更新
 			.add_system( update_footer_ui_left.system() )			// 情報を更新
 			.add_system( update_footer_ui_center.system() )			// 情報を更新
@@ -59,9 +60,10 @@ const MESSAGE_OVER: [ MessageSect; 2 ] =
 ];
 
 struct HeaderUiLeft;
-const HEADER_UI_LEFT: [ MessageSect; 2 ] =
+const HEADER_UI_LEFT: [ MessageSect; 3 ] =
 [	( "バリヤー ", FONT_FILE, PIXEL_PER_GRID * 1.2, Color::ORANGE ),
-	( "　"      , FONT_FILE, PIXEL_PER_GRID * 1.5, Color::WHITE  ), // 高さ合せ用
+	( NA_STR3   , FONT_FILE, PIXEL_PER_GRID * 1.5, Color::WHITE ),
+	( "%"	    , FONT_FILE, PIXEL_PER_GRID * 1.2, Color::ORANGE ),
 ];
 
 struct HeaderUiRight;
@@ -205,12 +207,26 @@ fn hidden_footer_frame() -> NodeBundle
 
 ////////////////////////////////////////////////////////////////////////////////
 
+//上端の情報表示を更新する(左)
+fn update_header_ui_left
+(	mut q: Query<&mut Text, With<HeaderUiLeft>>,
+	o_collsion: Option<Res<CollisionDamage>>,
+)
+{	if let Ok( mut ui ) = q.single_mut()
+	{	let life_gauge = match o_collsion
+		{	Some( collision ) => format!( "{:03}", collision.life.max( 0.0 ) ),
+			None              => NA_STR3.to_string()
+		};
+		ui.sections[ 1 ].value = life_gauge;
+	}
+}
+
 //上端の情報表示を更新する(右)
 fn update_header_ui_right
-(	mut q_ui: Query<&mut Text, With<HeaderUiRight>>,
-	o_life: Option<ResMut<LifeTime>>,
+(	mut q: Query<&mut Text, With<HeaderUiRight>>,
+	o_life: Option<Res<LifeTime>>,
 )
-{	if let Ok( mut ui ) = q_ui.single_mut()
+{	if let Ok( mut ui ) = q.single_mut()
 	{	let life_time = match o_life
 		{	Some( life ) => format!( "{:2.2}", life.time ),
 			None         => NA_TIME.to_string()
@@ -221,10 +237,10 @@ fn update_header_ui_right
 
 //下端の情報表示を更新する(左)
 fn update_footer_ui_left
-(	mut q_ui: Query<&mut Text, With<FooterUiLeft>>,
+(	mut q: Query<&mut Text, With<FooterUiLeft>>,
 	diag: Res<Diagnostics>,
 )
-{	if let Ok( mut ui ) = q_ui.single_mut()
+{	if let Ok( mut ui ) = q.single_mut()
 	{	let fps_avr = if let Some( fps ) = diag.get( FrameTimeDiagnosticsPlugin::FPS )
 		{	match fps.average()
 			{	Some( avg ) => format!( "{:.2}", avg ),
@@ -237,10 +253,10 @@ fn update_footer_ui_left
 
 //下端の情報表示を更新する(中)
 fn update_footer_ui_center
-(	mut q_ui: Query<&mut Text, With<FooterUiCenter>>,
+(	mut q: Query<&mut Text, With<FooterUiCenter>>,
 	o_falls: Option<Res<InfoNumOfFalls>>,
 )
-{	if let Ok( mut ui ) = q_ui.single_mut()
+{	if let Ok( mut ui ) = q.single_mut()
  	{	let falls_count = match o_falls
 		{	Some( falls ) => format!( "{:03}", falls.count ),
 			None          => NA_STR3.to_string()
@@ -251,10 +267,10 @@ fn update_footer_ui_center
 
 //下端の情報表示を更新する(右)
 fn update_footer_ui_right
-(	mut q_ui: Query<&mut Text, With<FooterUiRight>>,
+(	mut q: Query<&mut Text, With<FooterUiRight>>,
 	o_bg: Option<Res<BgStars>>,
 )
-{	if let Ok( mut ui ) = q_ui.single_mut()
+{	if let Ok( mut ui ) = q.single_mut()
 	{	let stars_count = match o_bg
 		{	Some( bg ) => format!( "{:03}", bg.stars.len() ),
 			None       => NA_STR3.to_string()

@@ -44,13 +44,16 @@ struct LifeGauge;
 
 //Resource
 pub struct LifeTime { pub time: f64 }
-struct CollisionDamage { damage: usize }
+pub struct CollisionDamage { pub life: f32 }
 
 //LIFE GAUGE
-const GAUGE_LENGTH: f32 = 100.0;	//LIFE GAUGEの長さ(LIFEポイント)
-const GAUGE_RATE: f32 = 18.0;		//スプライトの横方向の拡大率
-const GAUGE_PIXEL: f32 = PIXEL_PER_GRID * 0.6;
-const GAUGE_POSITION: ( f32, f32 ) = ( 0.0, SCREEN_HEIGHT / 2.0 - PIXEL_PER_GRID * 0.9 );
+pub const GAUGE_LENGTH: f32 = 100.0;				//LIFE GAUGEの長さ(LIFEポイント)
+const GAUGE_SPRITE_RECT: ( f32, f32, f32, f32 ) = 
+(	PIXEL_PER_GRID * -1.3,							//X軸：画面中央からやや左より
+	PIXEL_PER_GRID * -1.2 + SCREEN_HEIGHT / 2.0,	//Y軸：画面上端からやや下がった位置
+	PIXEL_PER_GRID * 15.0,							//幅
+	PIXEL_PER_GRID *  0.3,							//高さ
+);
 const GAUGE_DEPTH: f32 = 30.0;
 
 //自機のスプライト
@@ -101,21 +104,19 @@ fn initialize_player
 		.insert( PhysicMaterial { density: 0.0, ..Default::default() } )
 	;
 
-	//正方形のスプライトを横方向へ拡大し、ライフゲージに見せる
-	let ( x, y ) = GAUGE_POSITION;
-	let mut sprite = SpriteBundle
-	{	material : color_matl.add( Color::YELLOW.into() ),
+	//LIFE GAUGEのスプライト
+	let ( x, y, w, h ) = GAUGE_SPRITE_RECT;
+	let sprite = SpriteBundle
+	{	material : color_matl.add( Color::GREEN.into() ),
 		transform: Transform::from_translation( Vec3::new( x, y, GAUGE_DEPTH ) ),
-		sprite   : Sprite::new( Vec2::new( 1.0, 1.0 ) * GAUGE_PIXEL ),
+		sprite   : Sprite::new( Vec2::new( w, h ) ),
 		..Default::default()
 	};
-	sprite.transform.apply_non_uniform_scale( Vec3::new( GAUGE_RATE, 1.0, 1.0 ) );
-	cmds.spawn_bundle( sprite )
-		.insert( LifeGauge );
+	cmds.spawn_bundle( sprite ).insert( LifeGauge );
 
 	//Resourceを登録する
 	cmds.insert_resource( LifeTime { time: 0.0 } );
-	cmds.insert_resource( CollisionDamage { damage: 0 } );
+	cmds.insert_resource( CollisionDamage { life: GAUGE_LENGTH } );
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -141,15 +142,18 @@ fn set_life_gauge_to_starting
 	mut assets_color_matl: ResMut<Assets<ColorMaterial>>,
 )
 {	//LIFE GAUGEを初期化する
+	let ( x, _, _, _ ) = GAUGE_SPRITE_RECT;
 	let ( mut transform, handle ) = q_gauge.single_mut().unwrap();
-	let scale = &mut transform.scale;
-	scale[ 0 ] = GAUGE_RATE;
+	let scale_width = &mut transform.scale[ 0 ];
+	*scale_width = 1.0;
+	let translation = &mut transform.translation;
+	translation.x = x;
 	let color_matl = assets_color_matl.get_mut( handle ).unwrap();
-	color_matl.color = Color::YELLOW;
+	color_matl.color = Color::GREEN;
 
 	//変数の初期化
 	life.time = 0.0;
-	collision.damage = 0;
+	collision.life = GAUGE_LENGTH;
 }
 
 //キー入力に従って自機を移動する
@@ -189,7 +193,7 @@ fn handle_collision_event
 	events.iter().for_each( | event |
 	{	if let CollisionEvent::Started( id1, id2 ) = event
 		{	if id1.rigid_body_entity() == player_id
-			|| id2.rigid_body_entity() == player_id { collision.damage += 1 }
+			|| id2.rigid_body_entity() == player_id { collision.life -= 1.0 }
 		}
 	} );
 }
@@ -202,21 +206,29 @@ fn update_life_gauge
 	mut assets_color_matl: ResMut<Assets<ColorMaterial>>,
 )
 {	let ( mut transform, handle ) = q.single_mut().unwrap();
-	let life_point = GAUGE_LENGTH - collision.damage as f32; //残りHP
 
-	//LIFE GAUGEの横方向の拡大率を変える(長方形の長さが変わる)
-	let scale = &mut transform.scale;
-	if 	scale[ 0 ] > 0.0
-	{	scale[ 0 ] = ( GAUGE_RATE / GAUGE_LENGTH ) * life_point;
-		if scale[ 0 ] < 0.0 { scale[ 0 ] = 0.0 }
+	//LIFE GAUGEがまだゼロでなければ
+	let scale_width = &mut transform.scale[ 0 ];
+	if 	*scale_width > 0.0
+	{	*scale_width = ( collision.life / GAUGE_LENGTH ).max( 0.0 );
+
+		//スプライトの両端が縮むので、左に移動して右端だけが縮んだように見せる
+		let ( x, _, w, _ ) = GAUGE_SPRITE_RECT;
+		let translation = &mut transform.translation;
+		translation.x = x - ( GAUGE_LENGTH - collision.life ) * w / 200.0;	
 	}
 
-	//色を変える(黄色⇒赤色)
+	//色を変える(緑色⇒黄色⇒赤色)
 	let color_matl = assets_color_matl.get_mut( handle ).unwrap();
-	color_matl.color = Color::rgb( 1.0, life_point / GAUGE_LENGTH, 0.0 );
+	let temp = collision.life / GAUGE_LENGTH;
+	color_matl.color =  if temp > 0.5
+	{	Color::rgb( 1.0 - ( temp - 0.5 ) * 2.0, 1.0, 0.0 )
+	} else
+	{	Color::rgb( 1.0, temp * 2.0, 0.0 )
+	};
 
 	//LIFEが0ならゲームオーバー
-	if life_point <= 0.0 { event.send( GameState::Over ); }
+	if collision.life <= 0.0 { event.send( GameState::Over ); }
 }
 
 //ライフがゼロになった自機はコントロール不能
