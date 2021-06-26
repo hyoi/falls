@@ -124,7 +124,7 @@ fn toggle_window_mode( inkey: Res<Input<KeyCode>>, mut window: ResMut<Windows> )
 
 //[Esc]が入力さたらPauseする
 fn handle_esc_key_for_pause
-(	mut q_ui : Query<&mut Visible, With<MessagePause>>,
+(	mut q: Query<&mut Visible, With<MessagePause>>,
 	mut phy_timer: ResMut<PhysicsTime>,
 	mut state: ResMut<State<GameState>>,
 	mut inkey: ResMut<Input<KeyCode>>,
@@ -132,9 +132,9 @@ fn handle_esc_key_for_pause
 {	if ! inkey.just_pressed( KeyCode::Escape ) { return }
 
 	let now = *state.current();
-	if ! ( now == GameState::Pause || now == GameState::Play ) { return }
+	if now != GameState::Pause && now != GameState::Play { return }
 
-	if let Ok( mut ui ) = q_ui.single_mut()
+	if let Ok( mut ui ) = q.single_mut()
 	{	match now
 		{	GameState::Pause =>
 			{	ui.is_visible = false;
