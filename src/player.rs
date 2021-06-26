@@ -221,11 +221,11 @@ fn update_life_gauge
 	//色を変える(緑色⇒黄色⇒赤色)
 	let color_matl = assets_color_matl.get_mut( handle ).unwrap();
 	let temp = collision.life / GAUGE_LENGTH;
-	color_matl.color =  if temp > 0.5
-	{	Color::rgb( 1.0 - ( temp - 0.5 ) * 2.0, 1.0, 0.0 )
-	} else
-	{	Color::rgb( 1.0, temp * 2.0, 0.0 )
-	};
+	color_matl.color = Color::rgb
+	(	1.0 - ( temp - 0.6 ).max( 0.0 ) * 2.0,
+		( temp.min( 0.7 ) * 2.0 - 0.4 ).max( 0.0 ),
+		0.0
+	);
 
 	//LIFEが0ならゲームオーバー
 	if collision.life <= 0.0 { event.send( GameState::Over ); }
