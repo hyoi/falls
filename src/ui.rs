@@ -16,7 +16,7 @@ impl Plugin for PluginUi
 		//--------------------------------------------------------------------------------
 			.add_system_set											// GameState::Start
 			(	SystemSet::on_enter( GameState::Start )				// on_enter()
-				.with_system( visible_start_message.system() )		// STARTメッセージ表示
+				.with_system( show_start_message.system() )		// STARTメッセージ表示
 			)
 			.add_system_set											// GameState::Start
 			(	SystemSet::on_update( GameState::Start )			// on_update()
@@ -24,7 +24,7 @@ impl Plugin for PluginUi
 			)
 			.add_system_set											// GameState::Start
 			(	SystemSet::on_exit( GameState::Start )				// on_exit()
-				.with_system( invisible_start_message.system() )	// STARTメッセージ非表示
+				.with_system( hide_start_message.system() )	// STARTメッセージ非表示
 			)
 		//--------------------------------------------------------------------------------
 		;
@@ -282,8 +282,13 @@ fn update_footer_ui_right
 ////////////////////////////////////////////////////////////////////////////////
 
 //STARTメッセージ表示
-fn visible_start_message( mut q_ui : Query<&mut Visible, With<MessageStart>> )
-{	if let Ok( mut ui ) = q_ui.single_mut() { ui.is_visible = true; }
+fn show_start_message( mut q: Query<&mut Visible, With<MessageStart>> )
+{	if let Ok( mut ui ) = q.single_mut() { ui.is_visible = true; }
+}
+
+//STARTメッセージ非表示
+fn hide_start_message( mut q: Query<&mut Visible, With<MessageStart>> )
+{	if let Ok( mut ui ) = q.single_mut() { ui.is_visible = false; }
 }
 
 //SPACEキーが入力され次第ステートを変更する
@@ -296,11 +301,5 @@ fn handle_input_space_key
 		inkey.reset( KeyCode::Space ); //https://bevy-cheatbook.github.io/programming/states.html#with-input
 	}
 }
-
-//STARTメッセージ非表示
-fn invisible_start_message( mut q_ui : Query<&mut Visible, With<MessageStart>> )
-{	if let Ok( mut ui ) = q_ui.single_mut() { ui.is_visible = false; }
-}
-
 
 //End of code
