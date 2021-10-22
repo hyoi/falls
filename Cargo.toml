@@ -2,7 +2,7 @@
 name = "inseki"
 version = "0.1.0"
 authors = ["hyoi <hyoi.kaz@gmail.com>"]
-edition = "2018"
+edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -33,4 +33,4 @@ getrandom = { version = "0.2.3", features = [ "wasm-bindgen" ] }
 bevy_canvas = "0.1.0"
 bevy_prototype_lyon = "0.3.1"
 heron = { version = "0.9.1", default-features = false, features = ["2d"] }
-rand = "0.8.3"
+rand = "0.8.4"

@@ -16,7 +16,7 @@ impl Plugin for PluginUi
 		//--------------------------------------------------------------------------------
 			.add_system_set											// GameState::Start
 			(	SystemSet::on_enter( GameState::Start )				// on_enter()
-				.with_system( show_start_message.system() )		// STARTメッセージ表示
+				.with_system( show_start_message.system() )			// STARTメッセージ表示
 			)
 			.add_system_set											// GameState::Start
 			(	SystemSet::on_update( GameState::Start )			// on_update()
@@ -24,7 +24,7 @@ impl Plugin for PluginUi
 			)
 			.add_system_set											// GameState::Start
 			(	SystemSet::on_exit( GameState::Start )				// on_exit()
-				.with_system( hide_start_message.system() )	// STARTメッセージ非表示
+				.with_system( hide_start_message.system() )			// STARTメッセージ非表示
 			)
 		//--------------------------------------------------------------------------------
 		;
