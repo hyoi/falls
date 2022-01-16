@@ -33,68 +33,6 @@ impl Plugin for PluginUi
 
 ////////////////////////////////////////////////////////////////////////////////
 
-//定義と定数
-
-const FONT_FILE: &str = "fonts/ReggaeOne-Regular.ttf";
-
-const NA_STR3: &str = "---";
-const NA_TIME: &str = "-.--";
-
-type MessageSect<'a> = ( &'a str, &'a str, f32, Color );
-
-pub struct MessagePause;
-const MESSAGE_PAUSE: [ MessageSect; 1 ] =
-[	( "P A U S E", FONT_FILE, PIXEL_PER_GRID * 5.0, Color::SILVER ),
-];
-
-pub struct MessageStart;
-const MESSAGE_START: [ MessageSect; 2 ] =
-[	( "GAME START", FONT_FILE, PIXEL_PER_GRID * 5.0, Color::SILVER ),
-	( "\nHit [SPACE] Key", FONT_FILE, PIXEL_PER_GRID * 2.0, Color::WHITE ),
-];
-
-pub struct MessageOver;
-const MESSAGE_OVER: [ MessageSect; 2 ] =
-[	( "GAME OVER", FONT_FILE, PIXEL_PER_GRID * 5.0, Color::SILVER ),
-	( "\nReplay?\nHit [SPACE] Key", FONT_FILE, PIXEL_PER_GRID * 2.0, Color::WHITE ),
-];
-
-struct HeaderUiLeft;
-const HEADER_UI_LEFT: [ MessageSect; 3 ] =
-[	( "バリヤー ", FONT_FILE, PIXEL_PER_GRID * 1.2, Color::ORANGE ),
-	( NA_STR3   , FONT_FILE, PIXEL_PER_GRID * 1.5, Color::WHITE ),
-	( "%"	    , FONT_FILE, PIXEL_PER_GRID * 1.2, Color::ORANGE ),
-];
-
-struct HeaderUiRight;
-const HEADER_UI_RIGHT: [ MessageSect; 3 ] =
-[	( "生存 ", FONT_FILE, PIXEL_PER_GRID * 1.2, Color::ORANGE ),
-	( NA_TIME, FONT_FILE, PIXEL_PER_GRID * 1.5, Color::WHITE  ),
-	( "秒"	 , FONT_FILE, PIXEL_PER_GRID * 1.2, Color::ORANGE ),
-];
-
-struct FooterUiLeft;
-const FOOTER_UI_LEFT: [ MessageSect; 2 ] =
-[	( "FPS " , FONT_FILE, PIXEL_PER_GRID * 1.2, Color::ORANGE ),
-	( NA_STR3, FONT_FILE, PIXEL_PER_GRID * 1.5, Color::WHITE  ),
-];
-
-struct FooterUiCenter;
-const FOOTER_UI_CENTER: [ MessageSect; 3 ] =
-[	( "落下物 ", FONT_FILE, PIXEL_PER_GRID * 1.2, Color::ORANGE ),
-	( NA_STR3  , FONT_FILE, PIXEL_PER_GRID * 1.5, Color::WHITE  ),
-	( "個"	   , FONT_FILE, PIXEL_PER_GRID * 1.2, Color::ORANGE ),
-];
-
-struct FooterUiRight;
-const FOOTER_UI_RIGHT: [ MessageSect; 3 ] =
-[	( "背景の星 ", FONT_FILE, PIXEL_PER_GRID * 1.2, Color::ORANGE ),
-	( NA_STR3	, FONT_FILE, PIXEL_PER_GRID * 1.5, Color::WHITE  ),
-	( "個"		, FONT_FILE, PIXEL_PER_GRID * 1.2, Color::ORANGE ),
-];
-
-////////////////////////////////////////////////////////////////////////////////
-
 //テキストUIを配置する
 fn spawn_text_ui_message( mut cmds: Commands, asset_svr: Res<AssetServer> )
 {	//中央に表示するtext

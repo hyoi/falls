@@ -1,36 +1,16 @@
 [package]
-name = "inseki"
-version = "0.1.0"
-authors = ["hyoi <hyoi.kaz@gmail.com>"]
+name = "falls"
+version = "0.2.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-# [dependencies]
-# bevy = "0.5.0"
-# bevy_canvas = "0.1.0"
-# bevy_prototype_lyon = "0.3.1"
-# heron = { version = "0.8.0", default-features = false, features = ["2d"] }
-# #heron = { version = "0.8.0", default-features = false, features = ["2d","debug"] }
-# rand = "0.8.3"
-
-[features]
-default = [
-  "bevy/bevy_gltf",
-  "bevy/bevy_winit",
-  "bevy/render",
-  "bevy/png",
-]
-native = [ "bevy/bevy_wgpu" ]
-web    = [ "bevy_webgl2"    ]
-
 [dependencies]
-bevy = { version = "0.5.0", default-features = false }
-bevy_webgl2 = { version="0.5.2", optional = true }
-winit = { version = "0.24.0" }
-getrandom = { version = "0.2.3", features = [ "wasm-bindgen" ] }
-
-bevy_canvas = "0.1.0"
-bevy_prototype_lyon = "0.3.1"
-heron = { version = "0.9.1", default-features = false, features = ["2d"] }
+bevy = "0.6.0"
+bevy_prototype_lyon = "0.4.0"
+heron = { git = "https://github.com/jcornaz/heron/", default-features = false, features = ["2d"] }
 rand = "0.8.4"
+
+# WASMの場合にどれか指定する必要がある？？
+#
+# rand = { version = "0.8.4", features = [ "wasm-bindgen" ] }
+# getrandom = { version = "0.2.4", features = [ "js" ] }
+# getrandom = { version = "0.2.4", features = [ "wasm-bindgen" ] }
