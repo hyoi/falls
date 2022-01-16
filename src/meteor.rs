@@ -3,28 +3,28 @@ use super::*;
 //Pluginの手続き
 pub struct PluginFalls;
 impl Plugin for PluginFalls
-{	fn build( &self, app: &mut AppBuilder )
+{	fn build( &self, app: &mut App )
 	{	app
 		//--------------------------------------------------------------------------------
-			.add_startup_system( initialize_falls.system() )		// 落下物の初期化
+			.add_startup_system( initialize_falls )			// 落下物の初期化
 		//--------------------------------------------------------------------------------
-			.add_system_set											// GameState::Start
-			(	SystemSet::on_update( GameState::Start )			// on_update()
-				.with_system( falling_meteors_onscreen.system() )	// 落下物を投入
-				.with_system( standby_meteors_offscreen.system() )	// 落下物を待機
+			.add_system_set									// GameState::Start
+			(	SystemSet::on_update( GameState::Start )	// on_update()
+				.with_system( falling_meteors_onscreen )	// 落下物を投入
+				.with_system( standby_meteors_offscreen )	// 落下物を待機
 			)
 		//--------------------------------------------------------------------------------
 			//Play中のPause処理のため、GameState::Playを独立させる。
-			.add_system_set											// GameState::Play
-			(	SystemSet::on_update( GameState::Play )				// on_update()
-				.with_system( falling_meteors_onscreen.system() )	// 落下物を投入
-				.with_system( standby_meteors_offscreen.system() )	// 落下物を待機
+			.add_system_set									// GameState::Play
+			(	SystemSet::on_update( GameState::Play )		// on_update()
+				.with_system( falling_meteors_onscreen )	// 落下物を投入
+				.with_system( standby_meteors_offscreen )	// 落下物を待機
 			)
 		//--------------------------------------------------------------------------------
-			.add_system_set											// GameState::Over
-			(	SystemSet::on_update( GameState::Over )				// on_update()
-				.with_system( falling_meteors_onscreen.system() )	// 落下物を投入
-				.with_system( standby_meteors_offscreen.system() )	// 落下物を待機
+			.add_system_set									// GameState::Over
+			(	SystemSet::on_update( GameState::Over )		// on_update()
+				.with_system( falling_meteors_onscreen )	// 落下物を投入
+				.with_system( standby_meteors_offscreen )	// 落下物を待機
 			)
 		//--------------------------------------------------------------------------------
 		;
@@ -61,15 +61,15 @@ fn generate_position_and_velocity() -> ( Vec3, Vec2 )
 //落下物の初期化
 fn initialize_falls
 (	mut cmds: Commands,
-	mut color_matl: ResMut<Assets<ColorMaterial>>,
 	asset_svr: Res<AssetServer>,
 )
 {	//画面外に落下物をspawnして待機させる
 	( 0..MAX_NUM_OF_FALLS ).for_each( |_|
 	{	let ( p, v ) = generate_position_and_velocity();
+		let custom_size = Some( Vec2::new( 1.0, 1.0 ) * PIXEL_PER_GRID );
 		let sprite = SpriteBundle
-		{	sprite   : Sprite::new( Vec2::new( 1.0, 1.0 ) * PIXEL_PER_GRID ),
-			material : color_matl.add( asset_svr.load( SPRITE_PNG_FILE ).into() ),
+		{	sprite   : Sprite { custom_size, ..Default::default() },
+			texture: asset_svr.load( SPRITE_PNG_FILE ),
 			transform: Transform::from_translation( p ),
 			..Default::default()
 		};
@@ -85,13 +85,13 @@ fn initialize_falls
 
 	//Resourceを登録する
 	cmds.insert_resource( FallingRhythm { timer: Timer::from_seconds( METEOR_SPAWN_WAIT, false ) } );
-	cmds.insert_resource( Gravity::from( Vec2::from_slice_unaligned( &SPACE_GRAVITY ) ) );
+	cmds.insert_resource( Gravity::from( Vec2::from_slice( &SPACE_GRAVITY ) ) );
 	cmds.insert_resource( InfoNumOfFalls{ count: 0 } );
 }
 
 //待機中だった落下物を画面上端に投入する
 fn falling_meteors_onscreen
-(	q: Query<( &mut RigidBody, &mut Transform, &mut Velocity ), With<Meteor>>,
+(	mut q: Query<( &mut RigidBody, &mut Transform, &mut Velocity ), With<Meteor>>,
 	( mut falling, time ): ( ResMut<FallingRhythm>, Res<Time> ),
 	mut info: ResMut<InfoNumOfFalls>,
 )
@@ -116,7 +116,7 @@ fn falling_meteors_onscreen
 }
 
 //画面外に出た落下物を待機させる
-fn standby_meteors_offscreen( q: Query<( &mut RigidBody, &Transform ), With<Meteor>> )
+fn standby_meteors_offscreen( mut q: Query<( &mut RigidBody, &Transform ), With<Meteor>> )
 {	q.for_each_mut( | ( mut rigid_body, transform ) |
 	{	if *rigid_body == RigidBody::Dynamic
 			&& ! ( ( LEFT..=RIGHT ).contains( &transform.translation.x )

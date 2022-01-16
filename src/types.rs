@@ -10,14 +10,17 @@ pub enum GameState
 }
 
 //Component
+#[derive(Component)]
 pub struct Player;
+
+#[derive(Component)]
 pub struct LifeGauge;
 
-//Component
+#[derive(Component)]
 pub struct Meteor;
 
 //Resource
-pub struct FallingRhythm { timer: Timer }		//落下物の発生タイマー
+pub struct FallingRhythm { pub timer: Timer }	//落下物の発生タイマー
 pub struct InfoNumOfFalls { pub count: usize }	//落下中の数
 
 //Resource
@@ -26,14 +29,14 @@ pub struct CollisionDamage { pub life: f32 }
 
 #[derive(Clone,Copy,Default,Debug)]
 pub struct Star
-{   xy : ( f32, f32 ),	//星の位置
-	v  : ( f32, f32 ),	//星の速度
-	r  : f32,			//星の半径
-	hue: f32,			//星の色相
+{   pub xy : ( f32, f32 ),	//星の位置
+	pub v  : ( f32, f32 ),	//星の速度
+	pub r  : f32,			//星の半径
+	pub hue: f32,			//星の色相
 }
 pub struct BgStars
 {	pub stars: Vec::<Star>,	//星の管理用リスト
-	timer: Timer,			//星の発生タイマー
+	pub timer: Timer,			//星の発生タイマー
 }
 
 //End of code.
