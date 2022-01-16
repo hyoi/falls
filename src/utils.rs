@@ -16,7 +16,7 @@ pub fn toggle_window_mode( inkey: Res<Input<KeyCode>>, mut window: ResMut<Window
 	if is_alt_return
 	{	use bevy::window::WindowMode::*;
 		if let Some( window ) = window.get_primary_mut()
-		{	let mode = if window.mode() == Windowed { SizedFullscreen } else { Windowed };
+		{	let mode = if window.mode() == Windowed { Fullscreen } else { Windowed };
 			window.set_mode( mode );
 		}
 	}

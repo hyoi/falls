@@ -13,12 +13,12 @@ use types::*;
 use consts::*;
 use utils::*;
 
-// mod ui;
+mod ui;
 // mod meteor;
 // mod player;
 // mod bg_stars;
 
-// use ui::*;
+use ui::*;
 // use meteor::*;
 // use player::*;
 // use bg_stars::*;
@@ -51,7 +51,7 @@ fn main()
 	.add_startup_system( spawn_camera )						// bevyのカメラ設置
 	.add_system( handle_events_for_change_state )			// GameStateの変更
 	//--------------------------------------------------------------------------------
-//	.add_plugin( PluginUi )									// UI
+	.add_plugin( PluginUi )									// UI
 //	.add_plugin( PluginPlayer )								// 自機
 //	.add_plugin( PluginFalls )								// 落下物
 //	.add_plugin( PluginBgStars )							// 背景の星空
@@ -61,7 +61,7 @@ fn main()
 	//--------------------------------------------------------------------------------
 	;
 
-	app.run();													// アプリの実行
+	app.run();												// アプリの実行
 }
 
 //End of code.

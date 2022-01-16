@@ -17,18 +17,6 @@ impl Plugin for PluginBgStars
 
 //定義と定数
 
-#[derive(Clone,Copy,Default,Debug)]
-pub struct Star
-{   xy : ( f32, f32 ),	//星の位置
-	v  : ( f32, f32 ),	//星の速度
-	r  : f32,			//星の半径
-	hue: f32,			//星の色相
-}
-pub struct BgStars
-{	pub stars: Vec::<Star>,	//星の管理用リスト
-	timer: Timer,			//星の発生タイマー
-}
-
 //描画範囲
 const LEFT  : f32 = SCREEN_WIDTH  / -2.0;
 const RIGHT : f32 = SCREEN_WIDTH  /  2.0;

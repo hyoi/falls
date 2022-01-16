@@ -35,13 +35,6 @@ impl Plugin for PluginFalls
 
 //定義と定数
 
-//Component
-struct Meteor;
-
-//Resource
-struct FallingRhythm { timer: Timer }					 //落下物の発生タイマー
-pub struct InfoNumOfFalls { pub count: usize }			 //落下中の数
-
 //落下物
 const SPRITE_PNG_FILE: &str = "sprites/meteor.png";		 //画像ファイル
 const METEOR_DEPTH: f32 = 10.0;							 //スプライトのZ座標 

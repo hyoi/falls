@@ -38,14 +38,6 @@ impl Plugin for PluginPlayer
 
 //定義と定数
 
-//Component
-struct Player;
-struct LifeGauge;
-
-//Resource
-pub struct LifeTime { pub time: f64 }
-pub struct CollisionDamage { pub life: f32 }
-
 //LIFE GAUGE
 pub const GAUGE_LENGTH: f32 = 100.0;				//LIFE GAUGEの長さ(LIFEポイント)
 const GAUGE_SPRITE_RECT: ( f32, f32, f32, f32 ) = 

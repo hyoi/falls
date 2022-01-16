@@ -3,28 +3,28 @@ use super::*;
 //Pluginの手続き
 pub struct PluginUi;
 impl Plugin for PluginUi
-{	fn build( &self, app: &mut AppBuilder )
+{	fn build( &self, app: &mut App )
 	{	app
 		//--------------------------------------------------------------------------------
-			.add_startup_system( spawn_text_ui_message.system() )	// Text UIを生成
+			.add_startup_system( spawn_text_ui_message )	// Text UIを生成
 		//--------------------------------------------------------------------------------
-			.add_system( update_header_ui_left.system() )			// 情報を更新
-			.add_system( update_header_ui_right.system() )			// 情報を更新
-			.add_system( update_footer_ui_left.system() )			// 情報を更新
-			.add_system( update_footer_ui_center.system() )			// 情報を更新
-			.add_system( update_footer_ui_right.system() )			// 情報を更新
+			.add_system( update_header_ui_left )			// 情報を更新
+			.add_system( update_header_ui_right )			// 情報を更新
+			.add_system( update_footer_ui_left )			// 情報を更新
+			.add_system( update_footer_ui_center )			// 情報を更新
+			.add_system( update_footer_ui_right )			// 情報を更新
 		//--------------------------------------------------------------------------------
-			.add_system_set											// GameState::Start
-			(	SystemSet::on_enter( GameState::Start )				// on_enter()
-				.with_system( show_start_message.system() )			// STARTメッセージ表示
+			.add_system_set									// GameState::Start
+			(	SystemSet::on_enter( GameState::Start )		// on_enter()
+				.with_system( show_start_message )			// STARTメッセージ表示
 			)
-			.add_system_set											// GameState::Start
-			(	SystemSet::on_update( GameState::Start )			// on_update()
-				.with_system( handle_input_space_key.system() )		// キー入力待ち
+			.add_system_set									// GameState::Start
+			(	SystemSet::on_update( GameState::Start )	// on_update()
+				.with_system( handle_input_space_key )		// キー入力待ち
 			)
-			.add_system_set											// GameState::Start
-			(	SystemSet::on_exit( GameState::Start )				// on_exit()
-				.with_system( hide_start_message.system() )			// STARTメッセージ非表示
+			.add_system_set									// GameState::Start
+			(	SystemSet::on_exit( GameState::Start )		// on_exit()
+				.with_system( hide_start_message )			// STARTメッセージ非表示
 			)
 		//--------------------------------------------------------------------------------
 		;
@@ -39,9 +39,9 @@ fn spawn_text_ui_message( mut cmds: Commands, asset_svr: Res<AssetServer> )
 	let mut pause_text = text_messsage( &MESSAGE_PAUSE, &asset_svr );
 	let mut start_text = text_messsage( &MESSAGE_START, &asset_svr );
 	let mut over_text  = text_messsage( &MESSAGE_OVER , &asset_svr );
-	pause_text.visible.is_visible = false;	//初期は非表示
-	start_text.visible.is_visible = false;	//初期は非表示
-	over_text.visible.is_visible  = false;	//初期は非表示
+	pause_text.visibility.is_visible = false;	//初期は非表示
+	start_text.visibility.is_visible = false;	//初期は非表示
+	over_text.visibility.is_visible  = false;	//初期は非表示
 
 	//上端に表示するtext
 	let mut header_ui_left   = text_messsage( &HEADER_UI_LEFT  , &asset_svr );
@@ -109,8 +109,8 @@ fn hidden_frame_for_centering() -> NodeBundle
 		align_items    : AlignItems::Center,
 		..Default::default()
 	};
-	let visible = Visible { is_visible: false, ..Default::default() };
-	NodeBundle { style, visible, ..Default::default() }
+	let visibility = Visibility { is_visible: false, ..Default::default() };
+	NodeBundle { style, visibility, ..Default::default() }
 }
 
 //上端幅合せ用の隠しフレーム
@@ -124,8 +124,8 @@ fn hidden_header_frame() -> NodeBundle
 		justify_content: JustifyContent::FlexEnd, //画面の上端
 		..Default::default()
 	};
-	let visible = Visible { is_visible: false, ..Default::default() };
-	NodeBundle { style, visible, ..Default::default() }
+	let visibility = Visibility { is_visible: false, ..Default::default() };
+	NodeBundle { style, visibility, ..Default::default() }
 }
 
 //下端幅合せ用の隠しフレーム
@@ -139,8 +139,8 @@ fn hidden_footer_frame() -> NodeBundle
 		justify_content: JustifyContent::FlexStart, //画面の下端
 		..Default::default()
 	};
-	let visible = Visible { is_visible: false, ..Default::default() };
-	NodeBundle { style, visible, ..Default::default() }
+	let visibility = Visibility { is_visible: false, ..Default::default() };
+	NodeBundle { style, visibility, ..Default::default() }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -150,7 +150,7 @@ fn update_header_ui_left
 (	mut q: Query<&mut Text, With<HeaderUiLeft>>,
 	o_collsion: Option<Res<CollisionDamage>>,
 )
-{	if let Ok( mut ui ) = q.single_mut()
+{	if let Ok( mut ui ) = q.get_single_mut()
 	{	let life_gauge = match o_collsion
 		{	Some( collision ) => format!( "{:03}", collision.life.max( 0.0 ) ),
 			None              => NA_STR3.to_string()
@@ -164,7 +164,7 @@ fn update_header_ui_right
 (	mut q: Query<&mut Text, With<HeaderUiRight>>,
 	o_life: Option<Res<LifeTime>>,
 )
-{	if let Ok( mut ui ) = q.single_mut()
+{	if let Ok( mut ui ) = q.get_single_mut()
 	{	let life_time = match o_life
 		{	Some( life ) => format!( "{:2.2}", life.time ),
 			None         => NA_TIME.to_string()
@@ -178,7 +178,7 @@ fn update_footer_ui_left
 (	mut q: Query<&mut Text, With<FooterUiLeft>>,
 	diag: Res<Diagnostics>,
 )
-{	if let Ok( mut ui ) = q.single_mut()
+{	if let Ok( mut ui ) = q.get_single_mut()
 	{	let fps_avr = if let Some( fps ) = diag.get( FrameTimeDiagnosticsPlugin::FPS )
 		{	match fps.average()
 			{	Some( avg ) => format!( "{:.2}", avg ),
@@ -194,7 +194,7 @@ fn update_footer_ui_center
 (	mut q: Query<&mut Text, With<FooterUiCenter>>,
 	o_falls: Option<Res<InfoNumOfFalls>>,
 )
-{	if let Ok( mut ui ) = q.single_mut()
+{	if let Ok( mut ui ) = q.get_single_mut()
  	{	let falls_count = match o_falls
 		{	Some( falls ) => format!( "{:03}", falls.count ),
 			None          => NA_STR3.to_string()
@@ -208,7 +208,7 @@ fn update_footer_ui_right
 (	mut q: Query<&mut Text, With<FooterUiRight>>,
 	o_bg: Option<Res<BgStars>>,
 )
-{	if let Ok( mut ui ) = q.single_mut()
+{	if let Ok( mut ui ) = q.get_single_mut()
 	{	let stars_count = match o_bg
 		{	Some( bg ) => format!( "{:03}", bg.stars.len() ),
 			None       => NA_STR3.to_string()
@@ -220,13 +220,13 @@ fn update_footer_ui_right
 ////////////////////////////////////////////////////////////////////////////////
 
 //STARTメッセージ表示
-fn show_start_message( mut q: Query<&mut Visible, With<MessageStart>> )
-{	if let Ok( mut ui ) = q.single_mut() { ui.is_visible = true; }
+fn show_start_message( mut q: Query<&mut Visibility, With<MessageStart>> )
+{	if let Ok( mut ui ) = q.get_single_mut() { ui.is_visible = true; }
 }
 
 //STARTメッセージ非表示
-fn hide_start_message( mut q: Query<&mut Visible, With<MessageStart>> )
-{	if let Ok( mut ui ) = q.single_mut() { ui.is_visible = false; }
+fn hide_start_message( mut q: Query<&mut Visibility, With<MessageStart>> )
+{	if let Ok( mut ui ) = q.get_single_mut() { ui.is_visible = false; }
 }
 
 //SPACEキーが入力され次第ステートを変更する
