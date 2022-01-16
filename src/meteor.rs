@@ -6,26 +6,26 @@ impl Plugin for PluginFalls
 {	fn build( &self, app: &mut App )
 	{	app
 		//--------------------------------------------------------------------------------
-			.add_startup_system( initialize_falls )			// 落下物の初期化
+		.add_startup_system( initialize_falls )			// 落下物の初期化
 		//--------------------------------------------------------------------------------
-			.add_system_set									// GameState::Start
-			(	SystemSet::on_update( GameState::Start )	// on_update()
-				.with_system( falling_meteors_onscreen )	// 落下物を投入
-				.with_system( standby_meteors_offscreen )	// 落下物を待機
-			)
+		.add_system_set									// GameState::Start
+		(	SystemSet::on_update( GameState::Start )	// on_update()
+			.with_system( falling_meteors_onscreen )	// 落下物を投入
+			.with_system( standby_meteors_offscreen )	// 落下物を待機
+		)
 		//--------------------------------------------------------------------------------
-			//Play中のPause処理のため、GameState::Playを独立させる。
-			.add_system_set									// GameState::Play
-			(	SystemSet::on_update( GameState::Play )		// on_update()
-				.with_system( falling_meteors_onscreen )	// 落下物を投入
-				.with_system( standby_meteors_offscreen )	// 落下物を待機
-			)
+		//Play中のPause処理のため、GameState::Playを独立させる。
+		.add_system_set									// GameState::Play
+		(	SystemSet::on_update( GameState::Play )		// on_update()
+			.with_system( falling_meteors_onscreen )	// 落下物を投入
+			.with_system( standby_meteors_offscreen )	// 落下物を待機
+		)
 		//--------------------------------------------------------------------------------
-			.add_system_set									// GameState::Over
-			(	SystemSet::on_update( GameState::Over )		// on_update()
-				.with_system( falling_meteors_onscreen )	// 落下物を投入
-				.with_system( standby_meteors_offscreen )	// 落下物を待機
-			)
+		.add_system_set									// GameState::Over
+		(	SystemSet::on_update( GameState::Over )		// on_update()
+			.with_system( falling_meteors_onscreen )	// 落下物を投入
+			.with_system( standby_meteors_offscreen )	// 落下物を待機
+		)
 		//--------------------------------------------------------------------------------
 		;
 	}

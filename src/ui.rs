@@ -6,26 +6,26 @@ impl Plugin for PluginUi
 {	fn build( &self, app: &mut App )
 	{	app
 		//--------------------------------------------------------------------------------
-			.add_startup_system( spawn_text_ui_message )	// Text UIを生成
+		.add_startup_system( spawn_text_ui_message )	// Text UIを生成
+	//--------------------------------------------------------------------------------
+		.add_system( update_header_ui_left )			// 情報を更新
+		.add_system( update_header_ui_right )			// 情報を更新
+		.add_system( update_footer_ui_left )			// 情報を更新
+		.add_system( update_footer_ui_center )			// 情報を更新
+		.add_system( update_footer_ui_right )			// 情報を更新
 		//--------------------------------------------------------------------------------
-			.add_system( update_header_ui_left )			// 情報を更新
-			.add_system( update_header_ui_right )			// 情報を更新
-			.add_system( update_footer_ui_left )			// 情報を更新
-			.add_system( update_footer_ui_center )			// 情報を更新
-			.add_system( update_footer_ui_right )			// 情報を更新
-		//--------------------------------------------------------------------------------
-			.add_system_set									// GameState::Start
-			(	SystemSet::on_enter( GameState::Start )		// on_enter()
-				.with_system( show_start_message )			// STARTメッセージ表示
-			)
-			.add_system_set									// GameState::Start
-			(	SystemSet::on_update( GameState::Start )	// on_update()
-				.with_system( handle_input_space_key )		// キー入力待ち
-			)
-			.add_system_set									// GameState::Start
-			(	SystemSet::on_exit( GameState::Start )		// on_exit()
-				.with_system( hide_start_message )			// STARTメッセージ非表示
-			)
+		.add_system_set									// GameState::Start
+		(	SystemSet::on_enter( GameState::Start )		// on_enter()
+			.with_system( show_start_message )			// STARTメッセージ表示
+		)
+		.add_system_set									// GameState::Start
+		(	SystemSet::on_update( GameState::Start )	// on_update()
+			.with_system( handle_input_space_key )		// キー入力待ち
+		)
+		.add_system_set									// GameState::Start
+		(	SystemSet::on_exit( GameState::Start )		// on_exit()
+			.with_system( hide_start_message )			// STARTメッセージ非表示
+		)
 		//--------------------------------------------------------------------------------
 		;
 	}
