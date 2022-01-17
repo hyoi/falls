@@ -49,6 +49,7 @@ fn main()
 	.add_event::<GameState>()								// 状態遷移のEventキュー
 	//--------------------------------------------------------------------------------
 	.add_startup_system( spawn_camera )						// bevyのカメラ設置
+	.add_system( handle_esc_key_for_pause )					// [Esc]でpause処理
 	.add_system( handle_events_for_change_state )			// GameStateの変更
 	//--------------------------------------------------------------------------------
 	.add_plugin( PluginUi )									// UI
@@ -56,10 +57,10 @@ fn main()
 	.add_plugin( PluginPlayer )								// 自機
 //	.add_plugin( PluginBgStars )							// 背景の星空
 	//--------------------------------------------------------------------------------
-	.add_system( toggle_window_mode )						// [Alt]+[Enter]でフルスクリーン
-	.add_system( handle_esc_key_for_pause )					// [Esc]でpause処理
-	//--------------------------------------------------------------------------------
 	;
+
+	#[cfg(not(target_arch = "wasm32"))]						// WASMで不要なキー操作
+	app.add_system( toggle_window_mode );					// [Alt]+[Enter]でフルスクリー
 
 	app.run();												// アプリの実行
 }
