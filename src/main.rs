@@ -15,12 +15,12 @@ use utils::*;
 
 mod ui;
 mod meteor;
-// mod player;
+mod player;
 // mod bg_stars;
 
 use ui::*;
 use meteor::*;
-// use player::*;
+use player::*;
 // use bg_stars::*;
 
 //メイン関数
@@ -53,7 +53,7 @@ fn main()
 	//--------------------------------------------------------------------------------
 	.add_plugin( PluginUi )									// UI
 	.add_plugin( PluginFalls )								// 落下物
-//	.add_plugin( PluginPlayer )								// 自機
+	.add_plugin( PluginPlayer )								// 自機
 //	.add_plugin( PluginBgStars )							// 背景の星空
 	//--------------------------------------------------------------------------------
 	.add_system( toggle_window_mode )						// [Alt]+[Enter]でフルスクリーン

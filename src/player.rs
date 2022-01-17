@@ -3,40 +3,38 @@ use super::*;
 //Pluginの手続き
 pub struct PluginPlayer;
 impl Plugin for PluginPlayer
-{	fn build( &self, app: &mut AppBuilder )
+{	fn build( &self, app: &mut App )
 	{	app
 		//--------------------------------------------------------------------------------
-			.add_startup_system( initialize_player.system() )			// 自機の初期化
+		.add_startup_system( initialize_player )			// 自機の初期化
 		//--------------------------------------------------------------------------------
-			.add_system_set												// GameState::Play
-			(	SystemSet::on_enter( GameState::Play )					// on_enter()
-				.with_system( set_player_to_start_position.system() )	// 自機を開始位置へ配置
-				.with_system( set_life_gauge_to_starting.system() )		// LIFE GAUGEを初期化
-			)
-			.add_system_set												// GameState::Play
-			(	SystemSet::on_update( GameState::Play )					// on_update()
-				.with_system( move_sprite_player.system() )				// 自機の移動
-				.with_system( handle_collision_event.system() )			// 衝突検知
-				.with_system( update_life_gauge.system() )				// LIFE GAUGEを更新
-			)
-			.add_system_set												// GameState::Play
-			(	SystemSet::on_exit( GameState::Play )					// on_exit()
-				.with_system( change_player_out_of_control.system() )	// 自機を制御不能に変更
-			)
+		.add_system_set										// GameState::Play
+		(	SystemSet::on_enter( GameState::Play )			// on_enter()
+			.with_system( set_player_to_start_position )	// 自機を開始位置へ配置
+			.with_system( set_life_gauge_to_starting )		// LIFE GAUGEを初期化
+		)
+		.add_system_set										// GameState::Play
+		(	SystemSet::on_update( GameState::Play )			// on_update()
+			.with_system( move_sprite_player )				// 自機の移動
+			.with_system( handle_collision_event )			// 衝突検知
+			.with_system( update_life_gauge )				// LIFE GAUGEを更新
+		)
+		.add_system_set										// GameState::Play
+		(	SystemSet::on_exit( GameState::Play )			// on_exit()
+			.with_system( change_player_out_of_control )	// 自機を制御不能に変更
+		)
 		//--------------------------------------------------------------------------------
-			.add_system_set												// GameState::Over
-			(	SystemSet::on_update( GameState::Over )					// on_update()
-				.with_system( standby_plyer_offscreen.system() )		// 画面外に出た自機を待機させる
-				.with_system( handle_input_space_key.system() )			// リプレイのキー入力待ち
-			)
+		.add_system_set										// GameState::Over
+		(	SystemSet::on_update( GameState::Over )			// on_update()
+			.with_system( standby_plyer_offscreen )			// 画面外に出た自機を待機させる
+			.with_system( handle_input_space_key )			// リプレイのキー入力待ち
+		)
 		//--------------------------------------------------------------------------------
 		;
 	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
-//定義と定数
 
 //LIFE GAUGE
 pub const GAUGE_LENGTH: f32 = 100.0;				//LIFE GAUGEの長さ(LIFEポイント)
@@ -68,42 +66,41 @@ const WAITING_BOTTOM: f32 = BOTTOM - PLAYER_PIXEL * 2.0;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-fn initialize_player
-(	mut cmds: Commands,
-	mut color_matl: ResMut<Assets<ColorMaterial>>,
-)
+fn initialize_player( mut cmds: Commands )
 {	//画面外に自機をspawnして待機させる
 	let triangle = &shapes::RegularPolygon
 	{	sides: 3,
 		feature: shapes::RegularPolygonFeature::Radius( PLAYER_PIXEL ),
 		..shapes::RegularPolygon::default()
 	};
-	let sprite = GeometryBuilder::build_as
-	(	triangle,
-		ShapeColors::new( PLAYER_COLOR ),
-		bevy_prototype_lyon::utils::DrawMode::Fill( FillOptions::default() ), //名前がbevy_canvasとバッティングした
-		Transform::from_translation( Vec3::new( 0.0, WAITING_BOTTOM, PLAYER_DEPTH ) )
-	);
+	let drawmode  = DrawMode::Fill( FillMode { options: FillOptions::default(), color: PLAYER_COLOR } );
+	let transform = Transform::from_translation( Vec3::new( 0.0, WAITING_BOTTOM, PLAYER_DEPTH ) );
+	let sprite = GeometryBuilder::build_as( triangle, drawmode, transform );
+
 	let points = vec! //自機(三角形)の頂点情報。heronのCollisionShape用
 	[	Vec3::new( 0.0, PIXEL_PER_GRID, 0.0 ),
 		Vec3::new( PIXEL_PER_GRID * -0.9, PIXEL_PER_GRID * -0.5, 0.0 ),
 		Vec3::new( PIXEL_PER_GRID *  0.9, PIXEL_PER_GRID * -0.5, 0.0 ),
 	];
+	let border_radius = None;
 	cmds.spawn_bundle( sprite )
 		.insert( Player )
 		.insert( RigidBody::Sensor )
-		.insert( CollisionShape::ConvexHull { points } )
+		.insert( CollisionShape::ConvexHull { points, border_radius } )
 		.insert( PhysicMaterial { density: 0.0, ..Default::default() } )
 	;
 
 	//LIFE GAUGEのスプライト
 	let ( x, y, w, h ) = GAUGE_SPRITE_RECT;
-	let sprite = SpriteBundle
-	{	material : color_matl.add( Color::GREEN.into() ),
-		transform: Transform::from_translation( Vec3::new( x, y, GAUGE_DEPTH ) ),
-		sprite   : Sprite::new( Vec2::new( w, h ) ),
+	let position  = Vec3::new( x, y, GAUGE_DEPTH );
+	let square    = Vec2::new( w, h );
+	let transform = Transform::from_translation( position );
+	let sprite    = Sprite
+	{	color: Color::GREEN,
+		custom_size: Some( square ),
 		..Default::default()
 	};
+	let sprite = SpriteBundle { transform, sprite, ..Default::default() };
 	cmds.spawn_bundle( sprite ).insert( LifeGauge );
 
 	//Resourceを登録する
@@ -118,7 +115,7 @@ fn set_player_to_start_position
 (	mut q: Query<( &mut RigidBody, &mut PhysicMaterial, &mut Transform ), With<Player>>,
 )
 {	//自機を画面内の開始位置へ
-	let ( mut rigid_body, mut phy_matl, mut transform ) = q.single_mut().unwrap();
+	let ( mut rigid_body, mut phy_matl, mut transform ) = q.get_single_mut().unwrap();
 	*rigid_body = RigidBody::Dynamic;
 	phy_matl.density = 0.0;
 	let ( x, y ) = PLAYER_START;
@@ -128,20 +125,18 @@ fn set_player_to_start_position
 
 //LIFE GAUGEをスタート状態に初期化する
 fn set_life_gauge_to_starting
-(	mut q_gauge: Query<( &mut Transform, &Handle<ColorMaterial> ), With<LifeGauge>>,
+(	mut q_gauge: Query<( &mut Transform, &mut Sprite ), With<LifeGauge>>,
 	mut life: ResMut<LifeTime>,
 	mut collision: ResMut<CollisionDamage>,
-	mut assets_color_matl: ResMut<Assets<ColorMaterial>>,
 )
 {	//LIFE GAUGEを初期化する
 	let ( x, _, _, _ ) = GAUGE_SPRITE_RECT;
-	let ( mut transform, handle ) = q_gauge.single_mut().unwrap();
+	let ( mut transform, mut sprite ) = q_gauge.get_single_mut().unwrap();
 	let scale_width = &mut transform.scale[ 0 ];
 	*scale_width = 1.0;
 	let translation = &mut transform.translation;
 	translation.x = x;
-	let color_matl = assets_color_matl.get_mut( handle ).unwrap();
-	color_matl.color = Color::GREEN;
+	sprite.color = Color::GREEN;
 
 	//変数の初期化
 	life.time = 0.0;
@@ -166,7 +161,7 @@ fn move_sprite_player
 	if inkey.pressed( KeyCode::Down  ) { dy += -PLAYER_PIXEL }
 
 	//スプライトの表示位置を更新する
-	let mut transform = q.single_mut().unwrap();
+	let mut transform = q.get_single_mut().unwrap();
 	let position = &mut transform.translation;
 	let new_x = position.x + dx * time_delta * 10.0;
 	let new_y = position.y + dy * time_delta * 10.0;
@@ -180,7 +175,7 @@ fn handle_collision_event
 	mut events: EventReader<CollisionEvent>,
 	mut collision: ResMut<CollisionDamage>,
 )
-{	let player_id = q.single().unwrap();
+{	let player_id = q.get_single().unwrap();
 
 	events.iter().for_each( | event |
 	{	if let CollisionEvent::Started( id1, id2 ) = event
@@ -192,12 +187,11 @@ fn handle_collision_event
 
 //ライフゲージを更新する。ライフがゼロならGameOverイベントを送信する
 fn update_life_gauge
-(	mut q: Query<( &mut Transform, &Handle<ColorMaterial> ), With<LifeGauge>>,
+(	mut q: Query<( &mut Transform, &mut Sprite ), With<LifeGauge>>,
 	collision: Res<CollisionDamage>,
 	mut event: EventWriter<GameState>,
-	mut assets_color_matl: ResMut<Assets<ColorMaterial>>,
 )
-{	let ( mut transform, handle ) = q.single_mut().unwrap();
+{	let ( mut transform, mut sprite ) = q.get_single_mut().unwrap();
 
 	//LIFE GAUGEがまだゼロでなければ
 	let scale_width = &mut transform.scale[ 0 ];
@@ -211,9 +205,8 @@ fn update_life_gauge
 	}
 
 	//色を変える(緑色⇒黄色⇒赤色)
-	let color_matl = assets_color_matl.get_mut( handle ).unwrap();
 	let temp = collision.life / GAUGE_LENGTH;
-	color_matl.color = Color::rgb
+	sprite.color = Color::rgb
 	(	1.0 - ( temp - 0.6 ).max( 0.0 ) * 2.0,
 		( temp.min( 0.7 ) * 2.0 - 0.4 ).max( 0.0 ),
 		0.0
@@ -226,19 +219,19 @@ fn update_life_gauge
 //ライフがゼロになった自機はコントロール不能
 fn change_player_out_of_control
 (	mut q_player: Query< &mut PhysicMaterial, With<Player> >,
-	mut q_ui    : Query< &mut Visible, With<MessageOver> >,
+	mut q_ui    : Query< &mut Visibility, With<MessageOver> >,
 )
 {	//自機に密度を与えて、heronの物理運動に任せる
-	let mut phy_matl = q_player.single_mut().unwrap();
+	let mut phy_matl = q_player.get_single_mut().unwrap();
 	phy_matl.density = 1.0;
 
 	//GAME OVERメッセージ表示
-	if let Ok( mut ui ) = q_ui.single_mut() { ui.is_visible = true }
+	if let Ok( mut ui ) = q_ui.get_single_mut() { ui.is_visible = true }
 }
 
 //画面外に出た自機を待機させる
 fn standby_plyer_offscreen( mut q: Query<( &mut RigidBody, &Transform ), With<Player> > )
-{	if let Ok ( ( mut rigid_body, transform ) ) = q.single_mut()
+{	if let Ok ( ( mut rigid_body, transform ) ) = q.get_single_mut()
 	{	if *rigid_body == RigidBody::Dynamic
 			&& ! ( ( WAITING_LEFT..=WAITING_RIGHT ).contains( &transform.translation.x )
 				&& ( WAITING_BOTTOM..=WAITING_TOP ).contains( &transform.translation.y ) )
@@ -251,14 +244,14 @@ fn standby_plyer_offscreen( mut q: Query<( &mut RigidBody, &Transform ), With<Pl
 
 //SPACEキーが入力され次第ステートを変更する
 fn handle_input_space_key
-(	mut q_ui   : Query< &mut Visible, With<MessageOver> >,
+(	mut q_ui : Query< &mut Visibility, With<MessageOver> >,
 	mut event: EventWriter<GameState>,
 	mut inkey: ResMut<Input<KeyCode>>,
 )
 {	if ! inkey.just_pressed( KeyCode::Space ) { return } 
 
 	//GAME OVERメッセージ非表示
-	if let Ok( mut ui ) = q_ui.single_mut() { ui.is_visible = false }
+	if let Ok( mut ui ) = q_ui.get_single_mut() { ui.is_visible = false }
 
 	//リプレイのイベント送信
 	event.send( GameState::Play );
