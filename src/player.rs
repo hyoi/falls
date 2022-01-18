@@ -75,7 +75,8 @@ fn initialize_player( mut cmds: Commands )
 	};
 	let drawmode  = DrawMode::Fill( FillMode { options: FillOptions::default(), color: PLAYER_COLOR } );
 	let transform = Transform::from_translation( Vec3::new( 0.0, WAITING_BOTTOM, PLAYER_DEPTH ) );
-	let sprite = GeometryBuilder::build_as( triangle, drawmode, transform );
+	let mut sprite = GeometryBuilder::build_as( triangle, drawmode, transform );
+	sprite.visibility = Visibility { is_visible: false };
 
 	let points = vec! //自機(三角形)の頂点情報。heronのCollisionShape用
 	[	Vec3::new( 0.0, PIXEL_PER_GRID, 0.0 ),
@@ -112,15 +113,16 @@ fn initialize_player( mut cmds: Commands )
 
 //自機をスタート位置へ配置する
 fn set_player_to_start_position
-(	mut q: Query<( &mut RigidBody, &mut PhysicMaterial, &mut Transform ), With<Player>>,
+(	mut q: Query<( &mut RigidBody, &mut PhysicMaterial, &mut Transform, &mut Visibility ), With<Player>>,
 )
 {	//自機を画面内の開始位置へ
-	let ( mut rigid_body, mut phy_matl, mut transform ) = q.get_single_mut().unwrap();
+	let ( mut rigid_body, mut phy_matl, mut transform, mut visibility ) = q.get_single_mut().unwrap();
 	*rigid_body = RigidBody::Dynamic;
 	phy_matl.density = 0.0;
 	let ( x, y ) = PLAYER_START;
 	transform.translation = Vec3::new( x, y, PLAYER_DEPTH );
 	transform.rotation = Quat::IDENTITY;
+	visibility.is_visible = true;
 }
 
 //LIFE GAUGEをスタート状態に初期化する
@@ -230,12 +232,13 @@ fn change_player_out_of_control
 }
 
 //画面外に出た自機を待機させる
-fn standby_plyer_offscreen( mut q: Query<( &mut RigidBody, &Transform ), With<Player> > )
-{	if let Ok ( ( mut rigid_body, transform ) ) = q.get_single_mut()
+fn standby_plyer_offscreen( mut q: Query<( &mut RigidBody, &Transform, &mut Visibility ), With<Player> > )
+{	if let Ok ( ( mut rigid_body, transform, mut visibility ) ) = q.get_single_mut()
 	{	if *rigid_body == RigidBody::Dynamic
 			&& ! ( ( WAITING_LEFT..=WAITING_RIGHT ).contains( &transform.translation.x )
 				&& ( WAITING_BOTTOM..=WAITING_TOP ).contains( &transform.translation.y ) )
-		{	*rigid_body = RigidBody::Sensor
+		{	*rigid_body = RigidBody::Sensor;
+			visibility.is_visible = false;
 		}
 	}
 }

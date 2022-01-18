@@ -71,6 +71,7 @@ fn initialize_falls
 		{	sprite   : Sprite { custom_size, ..Default::default() },
 			texture: asset_svr.load( SPRITE_PNG_FILE ),
 			transform: Transform::from_translation( p ),
+			visibility: Visibility { is_visible: false },
 			..Default::default()
 		};
 		cmds.spawn_bundle( sprite )
@@ -91,7 +92,7 @@ fn initialize_falls
 
 //待機中だった落下物を画面上端に投入する
 fn falling_meteors_onscreen
-(	mut q: Query<( &mut RigidBody, &mut Transform, &mut Velocity ), With<Meteor>>,
+(	mut q: Query<( &mut RigidBody, &mut Transform, &mut Velocity, &mut Visibility ), With<Meteor>>,
 	( mut falling, time ): ( ResMut<FallingRhythm>, Res<Time> ),
 	mut info: ResMut<InfoNumOfFalls>,
 )
@@ -102,13 +103,14 @@ fn falling_meteors_onscreen
 	//落下物を一つ投入する
 	let mut flag = 1;
 	let mut count = 0;
-	q.for_each_mut( | ( mut rigid_body, mut transform, mut velocity ) |
+	q.for_each_mut( | ( mut rigid_body, mut transform, mut velocity, mut visibility ) |
 	{	if flag == 1 && *rigid_body == RigidBody::Sensor
 		{	flag = 0;
 			*rigid_body = RigidBody::Dynamic;
 			let ( p, v ) = generate_position_and_velocity();
 			transform.translation = p;
 			velocity.linear = v.extend( 0.0 );
+			visibility.is_visible = true;
 		}
 		if *rigid_body == RigidBody::Dynamic { count += 1 }
 	} );
@@ -116,12 +118,15 @@ fn falling_meteors_onscreen
 }
 
 //画面外に出た落下物を待機させる
-fn standby_meteors_offscreen( mut q: Query<( &mut RigidBody, &Transform ), With<Meteor>> )
-{	q.for_each_mut( | ( mut rigid_body, transform ) |
+fn standby_meteors_offscreen
+(	mut q: Query<( &mut RigidBody, &Transform, &mut Visibility ), With<Meteor>>
+)
+{	q.for_each_mut( | ( mut rigid_body, transform, mut visibility ) |
 	{	if *rigid_body == RigidBody::Dynamic
 			&& ! ( ( LEFT..=RIGHT ).contains( &transform.translation.x )
 				&& ( BOTTOM..=TOP ).contains( &transform.translation.y ) )
-		{	*rigid_body = RigidBody::Sensor
+		{	*rigid_body = RigidBody::Sensor;
+			visibility.is_visible = false;
 		}
 	} );
 }
