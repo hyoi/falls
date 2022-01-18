@@ -44,42 +44,47 @@ pub const MESSAGE_OVER: [ MessageSect; 2 ] =
 ];
 
 #[derive(Component)]
-pub struct HeaderUiLeft;
-pub const HEADER_UI_LEFT: [ MessageSect; 3 ] =
+pub struct UiUpperLeft;
+pub const UI_UPPER_LEFT: [ MessageSect; 3 ] =
 [	( "バリヤー ", FONT_FILE, PIXEL_PER_GRID * 1.2, Color::ORANGE ),
 	( NA_STR3   , FONT_FILE, PIXEL_PER_GRID * 1.5, Color::WHITE ),
 	( "%"	    , FONT_FILE, PIXEL_PER_GRID * 1.2, Color::ORANGE ),
 ];
 
 #[derive(Component)]
-pub struct HeaderUiRight;
-pub const HEADER_UI_RIGHT: [ MessageSect; 3 ] =
+pub struct UiUpperCenter;
+pub const UI_UPPER_CENTER: [ MessageSect; 3 ] =
+[	( "落下物 ", FONT_FILE, PIXEL_PER_GRID * 1.2, Color::ORANGE ),
+	( NA_STR3  , FONT_FILE, PIXEL_PER_GRID * 1.5, Color::WHITE  ),
+	( "個"	   , FONT_FILE, PIXEL_PER_GRID * 1.2, Color::ORANGE ),
+];
+
+
+#[derive(Component)]
+pub struct UiUpperRight;
+pub const UI_UPPER_RIGHT: [ MessageSect; 3 ] =
 [	( "生存 ", FONT_FILE, PIXEL_PER_GRID * 1.2, Color::ORANGE ),
 	( NA_TIME, FONT_FILE, PIXEL_PER_GRID * 1.5, Color::WHITE  ),
 	( "秒"	 , FONT_FILE, PIXEL_PER_GRID * 1.2, Color::ORANGE ),
 ];
 
 #[derive(Component)]
-pub struct FooterUiLeft;
-pub const FOOTER_UI_LEFT: [ MessageSect; 2 ] =
+pub struct UiLowerLeft;
+pub const UI_LOWER_LEFT: [ MessageSect; 2 ] =
 [	( "FPS " , FONT_FILE, PIXEL_PER_GRID * 1.2, Color::ORANGE ),
 	( NA_STR3, FONT_FILE, PIXEL_PER_GRID * 1.5, Color::WHITE  ),
 ];
 
 #[derive(Component)]
-pub struct FooterUiCenter;
-pub const FOOTER_UI_CENTER: [ MessageSect; 3 ] =
-[	( "落下物 ", FONT_FILE, PIXEL_PER_GRID * 1.2, Color::ORANGE ),
-	( NA_STR3  , FONT_FILE, PIXEL_PER_GRID * 1.5, Color::WHITE  ),
-	( "個"	   , FONT_FILE, PIXEL_PER_GRID * 1.2, Color::ORANGE ),
+pub struct UiLowerCenter;
+pub const UI_LOWER_CENTER: [ MessageSect; 1 ] =
+[	( "2021 - 2022 hyoi", FONT_FILE, PIXEL_PER_GRID * 0.7, Color::WHITE ),
 ];
 
 #[derive(Component)]
-pub struct FooterUiRight;
-pub const FOOTER_UI_RIGHT: [ MessageSect; 3 ] =
-[	( "背景の星 ", FONT_FILE, PIXEL_PER_GRID * 1.2, Color::ORANGE ),
-	( NA_STR3	, FONT_FILE, PIXEL_PER_GRID * 1.5, Color::WHITE  ),
-	( "個"		, FONT_FILE, PIXEL_PER_GRID * 1.2, Color::ORANGE ),
+pub struct UiLowerRight;
+pub const UI_LOWER_RIGHT: [ MessageSect; 1 ] =
+[	( "powered by Rust&Bevy", FONT_FILE, PIXEL_PER_GRID * 0.7, Color::WHITE ),
 ];
 
 //End of code.

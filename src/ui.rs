@@ -7,12 +7,11 @@ impl Plugin for PluginUi
 	{	app
 		//--------------------------------------------------------------------------------
 		.add_startup_system( spawn_text_ui_message )	// Text UIを生成
-	//--------------------------------------------------------------------------------
-		.add_system( update_header_ui_left )			// 情報を更新
-		.add_system( update_header_ui_right )			// 情報を更新
-		.add_system( update_footer_ui_left )			// 情報を更新
-		.add_system( update_footer_ui_center )			// 情報を更新
-		.add_system( update_footer_ui_right )			// 情報を更新
+		//--------------------------------------------------------------------------------
+		.add_system( update_ui_upper_left )				// 情報を更新
+		.add_system( update_ui_upper_center )			// 情報を更新
+		.add_system( update_ui_upper_right )			// 情報を更新
+		.add_system( update_ui_lower_left )				// 情報を更新
 		//--------------------------------------------------------------------------------
 		.add_system_set									// GameState::Start
 		(	SystemSet::on_enter( GameState::Start )		// on_enter()
@@ -44,23 +43,26 @@ fn spawn_text_ui_message( mut cmds: Commands, asset_svr: Res<AssetServer> )
 	over_text.visibility.is_visible  = false;	//初期は非表示
 
 	//上端に表示するtext
-	let mut header_ui_left   = text_messsage( &HEADER_UI_LEFT  , &asset_svr );
-	let mut header_ui_right  = text_messsage( &HEADER_UI_RIGHT , &asset_svr );
-	header_ui_left.style.align_self = AlignSelf::FlexStart;
-	header_ui_left.text.alignment.horizontal = HorizontalAlign::Left;
-	header_ui_right.style.align_self = AlignSelf::FlexEnd;
-	header_ui_right.text.alignment.horizontal = HorizontalAlign::Right;
+	let mut ui_upper_left   = text_messsage( &UI_UPPER_LEFT  , &asset_svr );
+	let mut ui_upper_center = text_messsage( &UI_UPPER_CENTER, &asset_svr );
+	let mut ui_upper_right  = text_messsage( &UI_UPPER_RIGHT , &asset_svr );
+	ui_upper_left.style.align_self = AlignSelf::FlexStart;
+	ui_upper_left.text.alignment.horizontal = HorizontalAlign::Left;
+	ui_upper_center.style.align_self = AlignSelf::Center;
+	ui_upper_center.text.alignment.horizontal = HorizontalAlign::Center;
+	ui_upper_right.style.align_self = AlignSelf::FlexEnd;
+	ui_upper_right.text.alignment.horizontal = HorizontalAlign::Right;
 
 	//下端に表示するtext
-	let mut footer_ui_left   = text_messsage( &FOOTER_UI_LEFT  , &asset_svr );
-	let mut footer_ui_center = text_messsage( &FOOTER_UI_CENTER, &asset_svr );
-	let mut footer_ui_right  = text_messsage( &FOOTER_UI_RIGHT , &asset_svr );
-	footer_ui_left.style.align_self = AlignSelf::FlexStart;
-	footer_ui_left.text.alignment.horizontal = HorizontalAlign::Left;
-	footer_ui_center.style.align_self = AlignSelf::Center;
-	footer_ui_center.text.alignment.horizontal = HorizontalAlign::Center;
-	footer_ui_right.style.align_self = AlignSelf::FlexEnd;
-	footer_ui_right.text.alignment.horizontal = HorizontalAlign::Right;
+	let mut ui_lower_left   = text_messsage( &UI_LOWER_LEFT  , &asset_svr );
+	let mut ui_lower_center = text_messsage( &UI_LOWER_CENTER, &asset_svr );
+	let mut ui_lower_right  = text_messsage( &UI_LOWER_RIGHT , &asset_svr );
+	ui_lower_left.style.align_self = AlignSelf::FlexStart;
+	ui_lower_left.text.alignment.horizontal = HorizontalAlign::Left;
+	ui_lower_center.style.align_self = AlignSelf::Center;
+	ui_lower_center.text.alignment.horizontal = HorizontalAlign::Center;
+	ui_lower_right.style.align_self = AlignSelf::FlexEnd;
+	ui_lower_right.text.alignment.horizontal = HorizontalAlign::Right;
 
 	//隠しフレームの上に子要素を作成する
 	cmds.spawn_bundle( hidden_frame_for_centering() ).with_children( | cmds |
@@ -69,14 +71,15 @@ fn spawn_text_ui_message( mut cmds: Commands, asset_svr: Res<AssetServer> )
 		cmds.spawn_bundle( over_text  ).insert( MessageOver  );
 
 		cmds.spawn_bundle( hidden_header_frame() ).with_children( | cmds |
-		{	cmds.spawn_bundle( header_ui_left   ).insert( HeaderUiLeft   );
-			cmds.spawn_bundle( header_ui_right  ).insert( HeaderUiRight  );
+		{	cmds.spawn_bundle( ui_upper_left   ).insert( UiUpperLeft   );
+			cmds.spawn_bundle( ui_upper_center ).insert( UiUpperCenter );
+			cmds.spawn_bundle( ui_upper_right  ).insert( UiUpperRight  );
 		} );
 
 		cmds.spawn_bundle( hidden_footer_frame() ).with_children( | cmds |
-		{	cmds.spawn_bundle( footer_ui_left   ).insert( FooterUiLeft   );
-			cmds.spawn_bundle( footer_ui_center ).insert( FooterUiCenter );
-			cmds.spawn_bundle( footer_ui_right  ).insert( FooterUiRight  );
+		{	cmds.spawn_bundle( ui_lower_left   ).insert( UiLowerLeft   );
+			cmds.spawn_bundle( ui_lower_center ).insert( UiLowerCenter );
+			cmds.spawn_bundle( ui_lower_right  ).insert( UiLowerRight  );
 		} );
 	} );
 }
@@ -146,8 +149,8 @@ fn hidden_footer_frame() -> NodeBundle
 ////////////////////////////////////////////////////////////////////////////////
 
 //上端の情報表示を更新する(左)
-fn update_header_ui_left
-(	mut q: Query<&mut Text, With<HeaderUiLeft>>,
+fn update_ui_upper_left
+(	mut q: Query<&mut Text, With<UiUpperLeft>>,
 	o_collsion: Option<Res<CollisionDamage>>,
 )
 {	if let Ok( mut ui ) = q.get_single_mut()
@@ -159,9 +162,23 @@ fn update_header_ui_left
 	}
 }
 
+//上端の情報表示を更新する(中)
+fn update_ui_upper_center
+(	mut q: Query<&mut Text, With<UiUpperCenter>>,
+	o_falls: Option<Res<InfoNumOfFalls>>,
+)
+{	if let Ok( mut ui ) = q.get_single_mut()
+ 	{	let falls_count = match o_falls
+		{	Some( falls ) => format!( "{:03}", falls.count ),
+			None          => NA_STR3.to_string()
+		};
+		ui.sections[ 1 ].value = falls_count;
+ 	}
+}
+
 //上端の情報表示を更新する(右)
-fn update_header_ui_right
-(	mut q: Query<&mut Text, With<HeaderUiRight>>,
+fn update_ui_upper_right
+(	mut q: Query<&mut Text, With<UiUpperRight>>,
 	o_life: Option<Res<LifeTime>>,
 )
 {	if let Ok( mut ui ) = q.get_single_mut()
@@ -174,8 +191,8 @@ fn update_header_ui_right
 }
 
 //下端の情報表示を更新する(左)
-fn update_footer_ui_left
-(	mut q: Query<&mut Text, With<FooterUiLeft>>,
+fn update_ui_lower_left
+(	mut q: Query<&mut Text, With<UiLowerLeft>>,
 	diag: Res<Diagnostics>,
 )
 {	if let Ok( mut ui ) = q.get_single_mut()
@@ -186,34 +203,6 @@ fn update_footer_ui_left
 			}
 		} else { NA_STR3.to_string() };
 		ui.sections[ 1 ].value = fps_avr;
-	}
-}
-
-//下端の情報表示を更新する(中)
-fn update_footer_ui_center
-(	mut q: Query<&mut Text, With<FooterUiCenter>>,
-	o_falls: Option<Res<InfoNumOfFalls>>,
-)
-{	if let Ok( mut ui ) = q.get_single_mut()
- 	{	let falls_count = match o_falls
-		{	Some( falls ) => format!( "{:03}", falls.count ),
-			None          => NA_STR3.to_string()
-		};
-		ui.sections[ 1 ].value = falls_count;
- 	}
-}
-
-//下端の情報表示を更新する(右)
-fn update_footer_ui_right
-(	mut q: Query<&mut Text, With<FooterUiRight>>,
-	o_bg: Option<Res<BgStars>>,
-)
-{	if let Ok( mut ui ) = q.get_single_mut()
-	{	let stars_count = match o_bg
-		{	Some( bg ) => format!( "{:03}", bg.stars.len() ),
-			None       => NA_STR3.to_string()
-		};
-		ui.sections[ 1 ].value = stars_count;
 	}
 }
 

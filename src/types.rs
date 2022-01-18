@@ -27,16 +27,4 @@ pub struct InfoNumOfFalls { pub count: usize }	//落下中の数
 pub struct LifeTime { pub time: f64 }
 pub struct CollisionDamage { pub life: f32 }
 
-#[derive(Clone,Copy,Default,Debug)]
-pub struct Star
-{   pub xy : ( f32, f32 ),	//星の位置
-	pub v  : ( f32, f32 ),	//星の速度
-	pub r  : f32,			//星の半径
-	pub hue: f32,			//星の色相
-}
-pub struct BgStars
-{	pub stars: Vec::<Star>,	//星の管理用リスト
-	pub timer: Timer,			//星の発生タイマー
-}
-
 //End of code.
