@@ -5,7 +5,7 @@ pub const APP_TITLE: &str = "falls";
 
 //マップの縦横のグリッド数（今回はあまり意味なし）
 pub const MAP_WIDTH : usize = 25;
-pub const MAP_HEIGHT: usize = 40;
+pub const MAP_HEIGHT: usize = 36;
 
 //表示倍率、ウィンドウの縦横pixel数と背景色
 pub const SCREEN_SCALING: usize = 3;
