@@ -68,18 +68,18 @@ fn initialize_falls
 	{	let ( p, v ) = generate_position_and_velocity();
 		let custom_size = Some( Vec2::new( 1.0, 1.0 ) * PIXEL_PER_GRID );
 		let sprite = SpriteBundle
-		{	sprite   : Sprite { custom_size, ..Default::default() },
+		{	sprite   : Sprite { custom_size, ..default() },
 			texture: asset_svr.load( SPRITE_PNG_FILE ),
 			transform: Transform::from_translation( p ),
 			visibility: Visibility { is_visible: false },
-			..Default::default()
+			..default()
 		};
 		cmds.spawn_bundle( sprite )
 			.insert( Meteor )
 			.insert( RigidBody::Sensor )
 			.insert( CollisionShape::Sphere { radius: PIXEL_PER_GRID / 2.0 } )
 			.insert( Velocity::from( v ) )
-			.insert( PhysicMaterial { restitution: 0.0, ..Default::default() } )
+			.insert( PhysicMaterial { restitution: 0.0, ..default() } )
 			.insert( RotationConstraints::lock() )
 		;
 	} );

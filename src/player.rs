@@ -88,7 +88,7 @@ fn initialize_player( mut cmds: Commands )
 		.insert( Player )
 		.insert( RigidBody::Sensor )
 		.insert( CollisionShape::ConvexHull { points, border_radius } )
-		.insert( PhysicMaterial { density: 0.0, ..Default::default() } )
+		.insert( PhysicMaterial { density: 0.0, ..default() } )
 	;
 
 	//LIFE GAUGEのスプライト
@@ -99,9 +99,9 @@ fn initialize_player( mut cmds: Commands )
 	let sprite    = Sprite
 	{	color: Color::GREEN,
 		custom_size: Some( square ),
-		..Default::default()
+		..default()
 	};
-	let sprite = SpriteBundle { transform, sprite, ..Default::default() };
+	let sprite = SpriteBundle { transform, sprite, ..default() };
 	cmds.spawn_bundle( sprite ).insert( LifeGauge );
 
 	//Resourceを登録する

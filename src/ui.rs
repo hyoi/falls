@@ -98,8 +98,8 @@ fn text_messsage( message: &[ MessageSect ], asset_svr: &Res<AssetServer> ) -> T
 	}
 	let alignment = TextAlignment { vertical: VerticalAlign::Center, horizontal: HorizontalAlign::Center };
 	let text = Text { sections, alignment };
-	let style = Style { position_type: PositionType::Absolute, ..Default::default() };
-	TextBundle { style, text, ..Default::default() }
+	let style = Style { position_type: PositionType::Absolute, ..default() };
+	TextBundle { style, text, ..default() }
 }
 
 //中央寄せ用の隠しフレーム
@@ -110,7 +110,7 @@ fn hidden_frame_for_centering() -> NodeBundle
 		position_type  : PositionType::Absolute,
 		justify_content: JustifyContent::Center,
 		align_items    : AlignItems::Center,
-		..Default::default()
+		..default()
 	};
 	let color = UiColor ( Color::NONE );
     NodeBundle { style, color, ..default() }
@@ -125,7 +125,7 @@ fn hidden_header_frame() -> NodeBundle
 		position_type  : PositionType::Absolute,
 		flex_direction : FlexDirection::Column,
 		justify_content: JustifyContent::FlexEnd, //画面の上端
-		..Default::default()
+		..default()
 	};
 	let color = UiColor ( Color::NONE );
     NodeBundle { style, color, ..default() }
@@ -140,7 +140,7 @@ fn hidden_footer_frame() -> NodeBundle
 		position_type  : PositionType::Absolute,
 		flex_direction : FlexDirection::Column,
 		justify_content: JustifyContent::FlexStart, //画面の下端
-		..Default::default()
+		..default()
 	};
 	let color = UiColor ( Color::NONE );
     NodeBundle { style, color, ..default() }
