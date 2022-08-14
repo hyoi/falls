@@ -112,8 +112,8 @@ fn hidden_frame_for_centering() -> NodeBundle
 		align_items    : AlignItems::Center,
 		..Default::default()
 	};
-	let visibility = Visibility { is_visible: false };
-	NodeBundle { style, visibility, ..Default::default() }
+	let color = UiColor ( Color::NONE );
+    NodeBundle { style, color, ..default() }
 }
 
 //上端幅合せ用の隠しフレーム
@@ -127,8 +127,8 @@ fn hidden_header_frame() -> NodeBundle
 		justify_content: JustifyContent::FlexEnd, //画面の上端
 		..Default::default()
 	};
-	let visibility = Visibility { is_visible: false };
-	NodeBundle { style, visibility, ..Default::default() }
+	let color = UiColor ( Color::NONE );
+    NodeBundle { style, color, ..default() }
 }
 
 //下端幅合せ用の隠しフレーム
@@ -142,8 +142,8 @@ fn hidden_footer_frame() -> NodeBundle
 		justify_content: JustifyContent::FlexStart, //画面の下端
 		..Default::default()
 	};
-	let visibility = Visibility { is_visible: false };
-	NodeBundle { style, visibility, ..Default::default() }
+	let color = UiColor ( Color::NONE );
+    NodeBundle { style, color, ..default() }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
