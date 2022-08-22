@@ -43,13 +43,15 @@ fn initialize_bg_stars( mut cmds: Commands )
 		let hue        = rng.gen_range( 0.0..360.0 );
 		let color      = Color::Hsla { hue, saturation, lightness, alpha };
 
-		let circle    = &shapes::Circle { radius, ..shapes::Circle::default() };
-		let drawmode  = DrawMode::Fill( FillMode { options: FillOptions::default(), color } );
-		let transform = Transform::from_translation( Vec3::new( x, y, 0.0 ) );
-
-		let sprite = GeometryBuilder::build_as( circle, drawmode, transform );
-
-		cmds.spawn_bundle( sprite ).insert( BgStarV ( vx, vy ) ).insert( BgStarHue ( hue) );
+		cmds.spawn_bundle( SpriteBundle::default() )
+			.insert( Sprite
+			{	color,
+				custom_size: Some( Vec2::new( radius, radius ) ),
+				..default()
+			} )
+			.insert( Transform::from_translation( Vec3::new( x, y, 0.0 ) ) )
+			.insert( BgStarV ( vx, vy ) )
+			.insert( BgStarHue ( hue ) );
 	} );
 	
 	let timer = Timer::from_seconds( 0.02, false );
@@ -78,22 +80,20 @@ fn scroll_bg_stars
 }
 
 fn twinkle_bg_stars
-(	mut q_star: Query<(&mut BgStarHue, &mut DrawMode)>,
+(	mut q_star: Query<(&mut BgStarHue, &mut Sprite)>,
 	time: Res<Time>,
 )
 {	let time_delta = time.delta().as_secs_f32();
 	let ( saturation, lightness, alpha ) = ( 1.0, 0.6, 1.0 );
 
 	q_star.for_each_mut
-	(	| ( mut star, mut draw_mode ) |
+	(	| ( mut star, mut sprite ) |
 		{	let BgStarHue ( hue ) = *star;
 			let mut hue = hue + 360.0 * time_delta;
 			if hue > 360.0 { hue %= 360.0 }
 			*star = BgStarHue ( hue );
 
-			let color = Color::Hsla { hue, saturation, lightness, alpha };
-			let fill_mode = FillMode { options: FillOptions::default(), color };
-			*draw_mode = DrawMode::Fill( fill_mode );
+			sprite.color = Color::Hsla { hue, saturation, lightness, alpha };
 		}
 	);
 }
