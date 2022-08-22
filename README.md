@@ -20,15 +20,16 @@ https://hyoi.github.io/falls/
 ## コンパイル方法
 デスクトップアプリにするなら `cargo run`でOK。
 ```
-cargo run --release    
+cargo run -r    
 ```
 WASMの場合は、bevy 0.6 から bevy_webgl2 に頼らなくても良くなりました。
 ```
-cargo build --release --target wasm32-unknown-unknown
+cargo build -r --target wasm32-unknown-unknown
 wasm-bindgen --out-dir ./target --target web --no-typescript ./target/wasm32-unknown-unknown/release/falls.wasm
 ```
 ※`wasm-bindgen`コマンドの各ディレクトリーは作業環境に合わせてください。   
-※WASMのコンパイルには事前にRustのtargetの追加とwasm-bindgenのインストールが必要です。たぶんきっとおそらく。  
+※WASMのコンパイルには事前にRustのtargetの追加とwasm-bindgenのインストールが必要です。  
+※wasm-bindgenを実行するとバージョン違いで警告が出ることがあります。その時は素直にバージョン上げましょう。  
 ```
 rustup target install wasm32-unknown-unknown
 cargo install -f wasm-bindgen-cli
@@ -36,7 +37,6 @@ cargo install -f wasm-bindgen-cli
 　[Unofficial Bevy Cheat Book - 13.5. Browser (WebAssembly)](https://bevy-cheatbook.github.io/platforms/wasm.html)をご参考に。
 ## お世話になりました
 - [bevy](https://bevyengine.org/)と[その仲間たち](https://crates.io/search?q=bevy)
-  - [bevy_prototype_lyon](https://github.com/Nilirad/bevy_prototype_lyon/)
   - [heron](https://github.com/jcornaz/heron/)
   - [bevy-web-resizer](https://github.com/frewsxcv/bevy-web-resizer)
   - [Unofficial Bevy Cheat Book](https://github.com/bevy-cheatbook/bevy-cheatbook)
@@ -47,3 +47,4 @@ cargo install -f wasm-bindgen-cli
 - ~~背景の星が落下物の手前に描画されることがある。それなりの頻度で。治したい~~
 - WASMのフレーム落ち、もちょっと何とかならないかしら
 - 音を鳴らしたい。beep音でいいから
+- 全部 なおしたい なおしたい 病（リファクタリングにいたる病）
