@@ -1,6 +1,5 @@
 //external modules
-use bevy::{ prelude::*, diagnostic::*,};
-use bevy_prototype_lyon::prelude::*;
+use bevy::{ prelude::*, diagnostic::*, sprite::MaterialMesh2dBundle };
 use heron::*;
 use rand::prelude::*;
 
@@ -30,7 +29,7 @@ fn main()
 		width    : SCREEN_WIDTH,
 		height   : SCREEN_HEIGHT,
 		resizable: false,
-		..Default::default()
+		..default()
 	};
 	
 	let mut app = App::new();
@@ -42,7 +41,6 @@ fn main()
 	//--------------------------------------------------------------------------------
 	.add_plugins( DefaultPlugins )							// デフォルトプラグイン
 	.add_plugin( FrameTimeDiagnosticsPlugin::default() )	// fps計測のプラグイン
-	.add_plugin( ShapePlugin )								// bevy_prototype_lyonを使う
 	.add_plugin( PhysicsPlugin::default() )					// heronを使う
 	//--------------------------------------------------------------------------------
 	.add_state( GameState::Start )							// 状態遷移のState初期値

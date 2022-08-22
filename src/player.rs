@@ -66,18 +66,16 @@ const WAITING_BOTTOM: f32 = BOTTOM - PLAYER_PIXEL * 2.0;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-fn initialize_player( mut cmds: Commands )
+fn initialize_player
+(	mut cmds: Commands,
+	mut meshes: ResMut<Assets<Mesh>>,
+	mut materials: ResMut<Assets<ColorMaterial>>,
+)
 {	//画面外に自機をspawnして待機させる
-	let triangle = &shapes::RegularPolygon
-	{	sides: 3,
-		feature: shapes::RegularPolygonFeature::Radius( PLAYER_PIXEL ),
-		..shapes::RegularPolygon::default()
-	};
-	let drawmode  = DrawMode::Fill( FillMode { options: FillOptions::default(), color: PLAYER_COLOR } );
 	let transform = Transform::from_translation( Vec3::new( 0.0, WAITING_BOTTOM, PLAYER_DEPTH ) );
-	let mut sprite = GeometryBuilder::build_as( triangle, drawmode, transform );
-	sprite.visibility = Visibility { is_visible: false };
-
+	let mesh = meshes.add( shape::RegularPolygon::new( PLAYER_PIXEL, 3 ).into() ).into();
+	let material = materials.add( ColorMaterial::from( PLAYER_COLOR ) );
+	let sprite = MaterialMesh2dBundle { transform, mesh, material, ..default() };
 	let points = vec! //自機(三角形)の頂点情報。heronのCollisionShape用
 	[	Vec3::new( 0.0, PIXEL_PER_GRID, 0.0 ),
 		Vec3::new( PIXEL_PER_GRID * -0.9, PIXEL_PER_GRID * -0.5, 0.0 ),
@@ -88,7 +86,7 @@ fn initialize_player( mut cmds: Commands )
 		.insert( Player )
 		.insert( RigidBody::Sensor )
 		.insert( CollisionShape::ConvexHull { points, border_radius } )
-		.insert( PhysicMaterial { density: 0.0, ..Default::default() } )
+		.insert( PhysicMaterial { density: 0.0, ..default() } )
 	;
 
 	//LIFE GAUGEのスプライト
@@ -99,9 +97,9 @@ fn initialize_player( mut cmds: Commands )
 	let sprite    = Sprite
 	{	color: Color::GREEN,
 		custom_size: Some( square ),
-		..Default::default()
+		..default()
 	};
-	let sprite = SpriteBundle { transform, sprite, ..Default::default() };
+	let sprite = SpriteBundle { transform, sprite, ..default() };
 	cmds.spawn_bundle( sprite ).insert( LifeGauge );
 
 	//Resourceを登録する
